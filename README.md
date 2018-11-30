@@ -70,11 +70,11 @@ This is inspired from previous work in the field, specifically:
 
 - Robert Harper and Daniel R. Licata,
   "Mechanizing Metatheory in a Logical Framework."
-  [Eprint](https://www.cs.cmu.edu/~rwh/papers/mech/jfp07.pdf)
+  [Eprint](https://web.archive.org/web/20160505171738/http://www.cs.cmu.edu/~rwh/papers/mech/jfp07.pdf)
 
 "Mechanizing the metatheory" will prove the specification is correct
 using Twelf, and ACSL will prove our implementation adheres to the
-specification. (The skeptical reader may ask "Isn't using Twelf to prove
+specification. (The skeptical reader may ask, "Isn't using Twelf to prove
 the correctness of the specification simply punting the problem? It'd be
 as correct as the Twelf implementation program, which may be buggy..."
 True, but Twelf proofs can be checked "by hand", if needed.)
@@ -96,7 +96,7 @@ True, but Twelf proofs can be checked "by hand", if needed.)
 I need a functional programming language whose implementation has been
 "proven correct".
 
-## What License are you using?
+### What License are you using?
 
 MIT License for all the code.
 

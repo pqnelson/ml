@@ -5,6 +5,9 @@
 - Global variables should be avoided. Only one global variable is used,
   and that's for unit testing. If using a global variable, prefix the
   identifier with `g_`.
+- Pointer declaration (and function parameters which are pointers)
+  should be of the form `type *identifier`, functions returning a
+  pointer should be `type* function(...)`.
 - **Design.** Code is organized into "modules" built around a data structure
   ("class") and a bunch of functions.
   - Header files will include a `typedef struct module_Class moduleClass`
@@ -43,13 +46,13 @@
     object 
 - **Nice Functions.** Useful functions which "most classes" have, but
   not necessarily all of them:
-  - `bool Class_equals(Class* this, Class* rhs)` will compare `this`
+  - `bool Class_equals(Class *this, Class *rhs)` will compare `this`
     object with the `rhs` ("right hand side") object
     - This should be a transitive function, i.e., if `Class_equals(a, b)` 
       and `Class_equals(b, c)`, then `Class_equals(a, c)`
     - This should be symmetric, i.e., `Class_equals(a, b) == Class_equals(b, a)`
     - It should be reflexive: `Class_equals(a, a)` for all `a`
-  - `hash_t Class_hashCode()` will create a hashcode for a `Class`
+  - `hash_t Class_hashCode(Class *this)` will create a hashcode for a `Class`
     object. 
     - Contract: if `Class_hashCode(a) == Class_hashCode(b)`, then
       `Class_equals(a, b)` should return `true`.
@@ -76,8 +79,8 @@ schematically begin with:
 #include <stddef.h>
 #include "defs.h"
 /* include "mod/class.h" */
-#include "test.h"
-#include "testsuites.h"
+#include "test.h" // for the test macros
+#include "testsuites.h" // where prototype of the suite lives
 ```
 
 **Step 1. Write the tests.** If we are
