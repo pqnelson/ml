@@ -3,30 +3,40 @@
  *
  * This contains the boiler plate code for <code>TestCase</code>,
  * <code>TestSuite</code>, <code>TestRunner</code> functionality.
+ *
  * 
  * @author Alex Nelson <pqnelson@gmail.com>
  * @date July 27, 2018
+ * @see http://svn.apache.org/repos/asf/ant/core/trunk/src/main/org/apache/tools/ant/taskdefs/optional/junit/XMLJUnitResultFormatter.java
+ */
+/*
+ * TODO: need to save the stdout, stderr to a string, and print that in
+ * an appropriate XML element. This requires <code>dlsym()</code> to
+ * hook the function with the element wrapping.
+ * 
+ * - http://pubs.opengroup.org/onlinepubs/009695399/functions/dlsym.html
+ * - https://opensourceforu.com/2011/08/lets-hook-a-library-function/
  */
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <string.h>
-#include "test.h"
 #include "defs.h"
+#include "test.h"
 
 /**
  * @section sec Test Case
  *
- * We have a unit test described by a {@code TestCase} object.
+ * We have a unit test described by a <code>TestCase</code> object.
  */
 TestCase* TestCase_new(void (*run)(struct TestCase *this),
                        char *name,
                        char *classname) {
     TestCase *test = (TestCase *)malloc(sizeof(*test));
     if (NULL == test) {
-        fprintf(stderr, "Cannot allocate space for new test case '%s' in '%s'\n", name, classname);
-        exit(31);
+        eprintf("Cannot allocate space for new test case '%s' in '%s'\n", name, classname);
+        exit(EXIT_MALLOCERR);
     }
     test->run = run;
     test->name = name;
@@ -42,21 +52,63 @@ void TestCase_free(TestCase *test) {
     test = NULL;
 }
 
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#include <Windows.h>
+#include <stdint.h>
+/**
+ * This workaround is lifted shamelessly from StackOverflow, though
+ * PostgreSQL has their own workaround too.
+ * 
+ * @see https://stackoverflow.com/a/26085827
+ * @see https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
+ */
+static int ms_gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
+    // until 00:00:00 January 1, 1970 
+    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    uint64_t    time;
+
+    GetSystemTime( &system_time );
+    SystemTimeToFileTime( &system_time, &file_time );
+    time =  ((uint64_t)file_time.dwLowDateTime )      ;
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
+    return 0;
+}
+#define mark_time ms_gettimeofday
+#else
+#define mark_time gettimeofday
+#endif /* _WIN32 */
+
 void TestCase_run(TestCase *test) {
+    struct timeval start, stop;
     if (TEST_RESULT_UNTESTED == test->result) {
+        mark_time(&(test->start), NULL); 
         test->run(test);
+        mark_time(&(test->stop), NULL);
     }
 }
 
-/* Only failures are printed to the screen */
+/**
+ * Print result to screen after running a test.
+ * 
+ * Only failures are printed to the screen.
+ */
 void TestCase_printToScreen(TestCase *test) {
     if (!test) return;
     else if (TestCase_isRunnable(test)) return;
     else if (TEST_RESULT_FAILURE == test->result) {
-        fprintf(stderr, "Test %s failed\n", test->name);
+        eprintf("Test %s failed\n", test->name);
     }
     else if (TEST_RESULT_ERROR == test->result) {
-        fprintf(stderr, "Test %s error\n", test->name);
+        eprintf("Test %s error\n", test->name);
     }
 }
 
@@ -65,6 +117,9 @@ static void indent(FILE *file, int layer) {
     while (layer-- > 0) fprintf(file, "  ");
 }
 
+/* Compare to XMLJUnitResultFormatter::endTest() for successful tests, and
+ * XMLJunitResultFormatter::formatError() for errors, failures
+ */
 void TestCase_printXML(TestCase *test, FILE *xml) {
     if (NULL == xml) return;
     // assert(NULL != test);
@@ -86,7 +141,7 @@ void TestCase_printXML(TestCase *test, FILE *xml) {
         } else if (TEST_RESULT_FAILURE == test->result) {
             fprintf(xml, "<failure>%s\n</failure>", test->message);
         } else {
-            fprintf(stderr,"Unknown result %d for test case %s\n",
+            eprintf("Unknown result %d for test case %s\n",
                     test->result,
                     test->name);
         }
@@ -99,13 +154,13 @@ void TestCase_printXML(TestCase *test, FILE *xml) {
  * @section sec Test Suite
  * 
  * The design is for a simple, composite pattern --- a collection of
- * {@code TestCase} objects.
+ * <code>TestCase</code> objects.
  */
 TestSuite* TestSuite_new(char *name) {
     TestSuite *suite = (TestSuite *)malloc(sizeof(*suite));
     if (NULL == suite) {
-        fprintf(stderr, "No memory to allocate test suite %s", name);
-        exit(31);
+        eprintf("No memory to allocate test suite %s", name);
+        exit(EXIT_MALLOCERR);
     }
     suite->name = name;
     suite->errors = 0;
@@ -153,8 +208,8 @@ void TestSuite_addTest(TestSuite *suite, TestCase *test) {
     // assert (NULL != suite)
     // assert (NULL != test)
     if (NULL == suite->first) {
-        printf("suite %s adding new test %s\n",
-               suite->name, test->name);
+        /* printf("suite %s adding new test %s\n", */
+        /*        suite->name, test->name); */
         suite->first = test;
         suite->last = test;
     } else {
@@ -162,7 +217,7 @@ void TestSuite_addTest(TestSuite *suite, TestCase *test) {
         suite->last = test;
     }
     suite->tests++;
-    printf("TestSuite %s added test case %s\n", suite->name, test->name);
+    // printf("TestSuite %s added test case %s\n", suite->name, test->name);
 }
 /**
  * Keep track of the number of failures, errors, skipped tests, and tests
@@ -193,7 +248,11 @@ static void TestSuite_updateStats(TestSuite *suite) {
     }
 }
 
-#define timeit(x) ((double)((x)->stop.tv_usec - (x)->start.tv_usec)/1000000 \
+/*
+ * Produces the interval between <code>stop</code> and
+ * <code>start</code> timevals. In units of seconds, as doubles.
+ */
+#define timeit(x) ((double)((x)->stop.tv_usec - (x)->start.tv_usec)/1000000.0 \
                    + (double)((x)->stop.tv_sec - (x)->start.tv_sec))
 /**
  * Run all the test cases in the suite, updating the interval for each test
@@ -203,21 +262,22 @@ void TestSuite_run(TestSuite *suite) {
     if (NULL == suite) return;
     
     TestCase *test = suite->first;
-    gettimeofday(&(suite->start), NULL); 
+    mark_time(&(suite->start), NULL); 
     while(NULL != test) {
-        gettimeofday(&(test->start), NULL); 
         TestCase_run(test);
-        gettimeofday(&(test->stop), NULL);
         test->interval = timeit(test);
         test = test->next;
     }
-    gettimeofday(&(suite->stop), NULL);
+    mark_time(&(suite->stop), NULL);
     suite->interval = timeit(suite);
     TestSuite_updateStats(suite);
 }
 
 /* @TODO refactor out the iso time string creation, since it is
  * repeated elsewhere.
+ */
+/* Compare to XMLJUnitResultFormatter::startTestSuite() and
+ * XMLJUnitResultFormatter::endTestSuite() 
  */
 void TestSuite_printXML(TestSuite *suite, FILE *xml) {
     // get the time in ISO format
@@ -263,8 +323,8 @@ void TestSuite_printToScreen(TestSuite *suite) {
 TestRunner* TestRunner_new() {
     TestRunner* runner = (TestRunner*)malloc(sizeof(*runner));
     if (!runner) {
-        fprintf(stderr, "Cannot allocate space for new test runner!\n");
-        exit(31);
+        eprintf("Cannot allocate space for new test runner!\n");
+        exit(EXIT_MALLOCERR);
     }
     runner->first = NULL;
     runner->last = NULL;
@@ -311,7 +371,7 @@ void TestRunner_run(TestRunner *runner) {
     
     TestSuite *suite = runner->first;
     while (NULL != suite) {
-        printf("TestRunner will run suite %s\n", suite->name);
+        // printf("TestRunner will run suite %s\n", suite->name);
         TestSuite_run(suite);
         suite = suite->next;
     }
@@ -325,12 +385,14 @@ void TestRunner_printToScreen(TestRunner *runner) {
         TestSuite_printToScreen(suite);
         suite = suite->next;
     }
-    printf("\n");
 }
 
 void TestRunner_printXML(TestRunner *runner, FILE *xml) {
     if (NULL == runner) return;
-    
+    if (NULL == xml) {
+        eprintf("TestRunner_printXML() given a NULL xml file pointer\n");
+        return;
+    }
     fprintf(xml, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf(xml, "<testsuites>\n");
     TestSuite *suite = runner->first;
