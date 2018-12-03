@@ -194,7 +194,6 @@ static void skipWhitespaceAndComments(mml_Scanner *this) {
         // finished = (no more whitespace) && (no more comments)
         finished = !hasSkippedWhitespace && (SKIP_COMMENT_SUCCESS != status);
     }
-    assert (!isWhitespace(this->start[0]));
     // `this->start` looks like "(*" iff experiencing a runaway comment
 }
 
