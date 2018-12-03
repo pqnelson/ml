@@ -95,6 +95,12 @@ static enum SKIP_COMMENT_STATUS {
     SKIP_COMMENT_NONE_FOUND
 };
 
+/*
+ * Caveat: for runaway comments, it DOES NOT skip it. Instead, it sets
+ * `this->current` to be the end of the string, and returns a
+ * `SKIP_COMMENT_RUNAWAY` status to indicate the scanner has, well, found
+ * a bug.
+ */
 static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
     if (!isCommentStart(this)) return SKIP_COMMENT_SUCCESS;
 
@@ -170,6 +176,11 @@ static bool skipWhitespace(mml_Scanner *this) {
     return hasSkippedWS;
 }
 
+/*
+ * For runaway comments, it skips the leading whitespace, but NOT the comment
+ * start. So if the `result->start` starts with "(*", then AND ONLY THEN
+ * is the scanner experiencing a runaway comment.
+ */
 static void skipWhitespaceAndComments(mml_Scanner *this) {
     bool finished = false;
     bool hasSkippedWhitespace = false;
@@ -180,9 +191,11 @@ static void skipWhitespaceAndComments(mml_Scanner *this) {
         if (isCommentStart(this)) {
             status = skipComment(this);
         }
-        // isFinished = !hasSkippedWhitespace && SKIP_COMMENT_NONE == status
+        // finished = (no more whitespace) && (no more comments)
         finished = !hasSkippedWhitespace && (SKIP_COMMENT_SUCCESS != status);
     }
+    assert (!isWhitespace(this->start[0]));
+    // `this->start` looks like "(*" iff experiencing a runaway comment
 }
 
 static mml_Token* makeToken(mml_Scanner *this, MML_TokenType type) {
@@ -261,7 +274,7 @@ static bool isIdentifierChar(char c) {
 static MML_TokenType scanLexeme(mml_Scanner *scanner) {
     while (isIdentifierChar(peek(scanner)))
         advance(scanner);
-    // matches "fn", "if", "then", "else", "True", "False"
+    // matches "fn", "if", "then", "else", "True", "False", etc.
     switch (scanner->start[0]) {
     case 'c':
         return matchKeyword(scanner, 1, 3, "ase", MML_TOKEN_CASE);
@@ -348,6 +361,7 @@ static mml_Token* scanString(mml_Scanner *scanner) {
         }
         advance(scanner);
     }
+    
     if (!mml_Scanner_hasNext(scanner)) {
         // unterminated string
         token = makeToken(scanner, MML_TOKEN_ERROR);
@@ -416,6 +430,14 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
     return token;
 }
 
+static mml_Token* handleRunawayComment(mml_Scanner *this) {
+    assert (isCommentStart(this)); // precondition
+    // runaway comment!
+    size_t length = strlen(this->start);
+    this->current += length;
+    return makeToken(this, MML_TOKEN_ERROR);
+}
+
 /**
  * Produce the next token on demand.
  *
@@ -434,10 +456,7 @@ mml_Token* mml_Scanner_next(mml_Scanner *this) {
     if (!mml_Scanner_hasNext(this)) {
         token = makeToken(this, MML_TOKEN_EOF);
     } else if (isCommentStart(this)) {
-        // runaway comment!
-        size_t length = strlen(this->start);
-        this->current += length;
-        token = makeToken(this, MML_TOKEN_ERROR);
+        token = handleRunawayComment(this);
     } else {
         // default case
         char c = advance(this);
