@@ -69,10 +69,9 @@
 /**
  * This definition of @c bool is taken from Donald Knuth.
  */
-typedef enum
-{
-	false = (1 == 0),
-	true = (!false)
+typedef enum {
+    false = (1 == 0),
+    true = (!false)
 } bool;
 #endif /* C99 */
 
