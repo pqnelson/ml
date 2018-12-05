@@ -11,11 +11,22 @@ TESTS=test/mml/token_test.c \
 $(OBJDIR)/%.o : $(SRCDIR)/%.c includes/%.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-compile: $(OBJS)
+# make dir to store the .o files, if it doesn't already exist
+makeTargetDir:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR)/mml
+
+compile: makeTargetDir $(OBJS)
+
+# create test result dir, if needed
+makeTestDir:
+	mkdir -p test-results
+
 # compile AND run the unit tests
-test: compile
+test: compile makeTestDir
 	$(CC) $(CFLAGS) test/runner.c test/test.c $(TESTS) $(OBJS) -o tests
 	./tests
+
 # remove everything, if they exist
 clean:
 	-rm -f $(OBJDIR)/*.o
