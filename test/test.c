@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
-#include <time.h>
+#include <time.h> /* localtime(), localtime_s() for MS */
 #include <string.h>
 #include "defs.h"
 #include "test.h"
@@ -88,7 +88,6 @@ static int ms_gettimeofday(struct timeval * tp, struct timezone * tzp)
 #endif /* _WIN32 */
 
 void TestCase_run(TestCase *test) {
-    struct timeval start, stop;
     if (TEST_RESULT_UNTESTED == test->result) {
         mark_time(&(test->start), NULL); 
         test->run(test);
@@ -283,13 +282,15 @@ void TestSuite_printXML(TestSuite *suite, FILE *xml) {
     // get the time in ISO format
     char isotime[40];
     time_t time = (suite->start).tv_sec;
-    struct tm tm_info;
 #if _WIN32
+    struct tm tm_info;
     localtime_s(&tm_info, &time);
-#else
-    localtime_r(&time, &tm_info);
-#endif
     strftime(isotime, sizeof(isotime), "%Y:%m:%d %H:%M:%S", &tm_info);
+#else
+    struct tm *tm_info;
+    tm_info = localtime(&time);
+    strftime(isotime, sizeof(isotime), "%Y:%m:%d %H:%M:%S", tm_info);
+#endif
 
     // print the test suite tag
     indent(xml, 1);

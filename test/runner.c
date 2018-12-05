@@ -31,29 +31,35 @@ static const char xmlDir[] = "test-results";
  * @param output A malloc'd buffer at least 29 characters big.
  */
 void timeToIso8601(time_t time, char *output) {
-    struct tm tm_info;
 #if _WIN32
+    struct tm tm_info;
     localtime_s(&tm_info, &time);
-#else
-    localtime_r(&time, &tm_info);
-#endif
     strftime(output, 29, "%Y-%m-%dT%H:%M:%S", &tm_info);
+#else
+    struct tm *tm_info;
+    tm_info = localtime(&time);
+    strftime(output, 29, "%Y-%m-%dT%H:%M:%S", tm_info);
+#endif
 }
 
 static void makeFilename(char **buf_p) {
     time_t rawtime = 0;
-    struct tm tm_info = {0};
     time(&rawtime);
     // assert (rawtime != 0)
 #if _WIN32
+    struct tm tm_info = {0};
     localtime_s(&tm_info, &rawtime);
-#else
-    localtime_r(&rawtime, &tm_info);
-#endif
     // assert (tm_info != {0})
     strftime(*buf_p, 48, "test-results/test-%Y-%m-%dT%H-%M-%S.xml", &tm_info);
+#else
+    struct tm *tm_info;
+    tm_info = localtime(&rawtime);
+    // assert (tm_info != {0})
+    strftime(*buf_p, 48, "test-results/test-%Y-%m-%dT%H-%M-%S.xml", tm_info);
+#endif
 }
 
+#if 0
 static void customFilename(char **buf_p, const char *dirName, int dirNameLen,
                            const char *filePrefix, int filePrefixLen) {
     // REQUIRE (*buf_p) can hold 35 + dirNameLen + filePrefixLen characters
@@ -77,6 +83,7 @@ static void customFilename(char **buf_p, const char *dirName, int dirNameLen,
     /* be sure the file name is null terminated */
     // **buf_p = '\0'; // null terminate the string
 }
+#endif /* 0 */
 
 static void printXMLResults() {
     char *filename = (char*)malloc(48);
