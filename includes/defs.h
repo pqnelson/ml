@@ -67,7 +67,7 @@
 #include <stdbool.h>
 #else
 /**
- * This definition of @c bool is taken from Donald Knuth.
+ * This definition of @c bool is taken from Donald Knuth...I think...
  */
 typedef enum {
     false = (1 == 0),
@@ -84,10 +84,20 @@ typedef long hash_t;
 
 /**
  * File reading/writing error status.
+ *
+ * Something went horribly awry reading from a file, or writing to one.
+ *
+ * This coincides with @c EX_IOERR.
  */
 #define EXIT_IOERR 74
 /**
  * Malloc returns @c NULL pointer.
+ *
+ * When @c malloc() fails, we should signal the error with this specific
+ * exit status.
+ *
+ * This coincides with @c EX_OSERR (which apparently is one standard usage
+ * of @c EX_OSERR).
  */
 #define EXIT_MALLOCERR 71
 /**
