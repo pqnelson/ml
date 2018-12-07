@@ -26,6 +26,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <stdio.h> // for fprintf(), stderr
 /**
  * Print to the error stream.
  *
