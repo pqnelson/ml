@@ -32,3 +32,8 @@ clean:
 	-rm -f $(OBJDIR)/*.o
 	-rm -f $(OBJDIR)/*/*.o
 	-rm -f tests
+
+# create the doxygen HTML documentation
+docs:
+	mkdir -p doc
+	doxygen Doxyfile
