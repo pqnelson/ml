@@ -10,9 +10,11 @@
   pointer should be `type* function(...)`.
 - **Design.** Code is organized into "modules" built around a data structure
   ("class") and a bunch of functions.
-  - Header files will include a `typedef struct module_Class moduleClass`
-    line, as well as any function prototypes
-  - Source files will include the `struct` definitions
+  - Header files will include a `typedef struct module_Class {...} module_Class`
+    line, as well as any function prototypes.
+  - Header files will include the `struct` definitions. Generically this
+    is a "bad choice" for libraries, but since this is a self-contained
+    programming with an eye towards pedagogy, it's not horrible.
 - **Naming Conventions.** The heuristics used in function naming.
   - "Modules" are lowercased and consist of as few letters as possible
     (e.g., "test", "mml" for "Mini-ML", and so on)
