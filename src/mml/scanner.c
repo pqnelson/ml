@@ -406,6 +406,9 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
             token = makeToken(scanner, MML_TOKEN_MINUS);
         }
         break;
+    case '_':
+        token = makeToken(scanner, MML_TOKEN_UNDERSCORE);
+        break;
     case '=':
         token = makeToken(scanner, MML_TOKEN_EQUAL);
         break;
@@ -413,7 +416,7 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
         token = makeToken(scanner, MML_TOKEN_PLUS);
         break;
     default:
-        // scanner->start[0] is one of these:  ?<>:;"'[{]}!@#$%^&_`~
+        // scanner->start[0] is one of these:  ?<>'[]!@#$%^&`~
         // when all else fails, it's an error token
         token = makeToken(scanner, MML_TOKEN_ERROR);
         break;
