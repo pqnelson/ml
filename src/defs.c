@@ -13,7 +13,7 @@
 #endif /* defined(_MSC_VER) || defined(_MSC_EXTENSIONS) */
 
 // windows version of gettimeofday()
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+int ms_gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     FILETIME ft;
     unsigned __int64 tmpres = 0;

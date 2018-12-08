@@ -62,7 +62,7 @@ void TestCase_free(TestCase *test) {
  * @see https://stackoverflow.com/a/26085827
  * @see https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
  */
-static int ms_gettimeofday(struct timeval * tp, struct timezone * tzp)
+static int psql_gettimeofday(struct timeval * tp, struct timezone * tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
     // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)

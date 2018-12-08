@@ -118,6 +118,7 @@ typedef long hash_t;
                           || defined(__WIN32__) || defined(__TOS_WIN__) \
                           || defined(__WINDOWS__))
 
-extern void timeToIso8601(time_t time, char *output);
+int ms_gettimeofday(struct timeval *tv, struct timezone *tz);
+void timeToIso8601(time_t time, char *output);
 
 #endif /* DEFS_H */
