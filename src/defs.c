@@ -2,8 +2,7 @@
 #include "defs.h"
 
 /* from https://stackoverflow.com/a/26085827 */
-#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-#include <time.h>
+#if WINDOWS_PLATFORM
 #include <windows.h>
 
 // define DELTA_EPOCH_IN_MICROSECS
@@ -46,4 +45,28 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
     
     return 0;
 }
-#endif /* defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) */
+#endif /* WINDOWS_PLATFORM */
+
+/**
+ * For reasons I do not understand, Windows requires 29 characters (even
+ * though the string is smaller than that).
+ */
+static const size_t ISO8601_STR_LEN = 29;
+
+/**
+ * Writes the given time to an output string in ISO8601 format.
+ *
+ * @param time The given time to format
+ * @param output A <code>malloc</code>'d buffer at least 29 characters big.
+ */
+void timeToIso8601(time_t time, char *output) {
+#if WINDOWS_PLATFORM
+    struct tm tm_info;
+    localtime_s(&tm_info, &time);
+    strftime(output, ISO8601_STR_LEN, "%Y-%m-%dT%H:%M:%S", &tm_info);
+#else
+    struct tm *tm_info;
+    tm_info = localtime(&time);
+    strftime(output, ISO8601_STR_LEN, "%Y-%m-%dT%H:%M:%S", tm_info);
+#endif
+}

@@ -272,9 +272,6 @@ void TestSuite_run(TestSuite *suite) {
     TestSuite_updateStats(suite);
 }
 
-/* @TODO refactor out the iso time string creation, since it is
- * repeated elsewhere.
- */
 /* Compare to XMLJUnitResultFormatter::startTestSuite() and
  * XMLJUnitResultFormatter::endTestSuite() 
  */
@@ -282,15 +279,7 @@ void TestSuite_printXML(TestSuite *suite, FILE *xml) {
     // get the time in ISO format
     char isotime[40];
     time_t time = (suite->start).tv_sec;
-#if _WIN32
-    struct tm tm_info;
-    localtime_s(&tm_info, &time);
-    strftime(isotime, sizeof(isotime), "%Y:%m:%d %H:%M:%S", &tm_info);
-#else
-    struct tm *tm_info;
-    tm_info = localtime(&time);
-    strftime(isotime, sizeof(isotime), "%Y:%m:%d %H:%M:%S", tm_info);
-#endif
+    timeToIso8601(time, isotime);
 
     // print the test suite tag
     indent(xml, 1);

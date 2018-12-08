@@ -26,6 +26,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <time.h> // localtime_s(), localtime(), strftime(), time_t
 #include <stdio.h> // for fprintf(), stderr
 /**
  * Print to the error stream.
@@ -110,5 +111,13 @@ typedef long hash_t;
  */
 #define EXIT_BAD_INPUT 65
 
+/**
+ * Macro for testing if on Windows platform.
+ */
+#define WINDOWS_PLATFORM (defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) \
+                          || defined(__WIN32__) || defined(__TOS_WIN__) \
+                          || defined(__WINDOWS__))
+
+extern void timeToIso8601(time_t time, char *output);
 
 #endif /* DEFS_H */
