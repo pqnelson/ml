@@ -11,7 +11,7 @@
 
 static void ReservedKeywordTest1(TestCase *this) {
     const char *source = "True";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_TRUE, mml_Token_type(token));
@@ -21,7 +21,7 @@ static void ReservedKeywordTest1(TestCase *this) {
 
 static void ReservedKeywordTest2(TestCase *this) {
     const char *source = "False";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_FALSE, mml_Token_type(token));
@@ -31,7 +31,7 @@ static void ReservedKeywordTest2(TestCase *this) {
 
 static void ReservedKeywordTest3(TestCase *this) {
     const char *source = "Int";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_INT, mml_Token_type(token));
@@ -41,7 +41,7 @@ static void ReservedKeywordTest3(TestCase *this) {
 
 static void ReservedKeywordTest4(TestCase *this) {
     const char *source = "Bool";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_BOOL, mml_Token_type(token));
@@ -51,7 +51,7 @@ static void ReservedKeywordTest4(TestCase *this) {
 
 static void ReservedKeywordTest5(TestCase *this) {
     const char *source = "fn";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_FN, mml_Token_type(token));
@@ -61,7 +61,7 @@ static void ReservedKeywordTest5(TestCase *this) {
 
 static void ReservedKeywordTest6(TestCase *this) {
     const char *source = "if";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_IF, mml_Token_type(token));
@@ -71,7 +71,7 @@ static void ReservedKeywordTest6(TestCase *this) {
 
 static void ReservedKeywordTest7(TestCase *this) {
     const char *source = "then";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_THEN, mml_Token_type(token));
@@ -81,7 +81,7 @@ static void ReservedKeywordTest7(TestCase *this) {
 
 static void ReservedKeywordTest8(TestCase *this) {
     const char *source = "else";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_ELSE, mml_Token_type(token));
@@ -91,7 +91,7 @@ static void ReservedKeywordTest8(TestCase *this) {
 
 static void ReservedKeywordTest9(TestCase *this) {
     const char *source = "let";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_LET, mml_Token_type(token));
@@ -101,7 +101,7 @@ static void ReservedKeywordTest9(TestCase *this) {
 
 static void ReservedKeywordTest10(TestCase *this) {
     const char *source = "letrec";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_LETREC, mml_Token_type(token));
@@ -111,7 +111,7 @@ static void ReservedKeywordTest10(TestCase *this) {
 
 static void ReservedKeywordTest11(TestCase *this) {
     const char *source = "in";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_IN, mml_Token_type(token));
@@ -121,7 +121,7 @@ static void ReservedKeywordTest11(TestCase *this) {
 
 static void ReservedKeywordTest12(TestCase *this) {
     const char *source = "case";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_CASE, mml_Token_type(token));
@@ -131,7 +131,7 @@ static void ReservedKeywordTest12(TestCase *this) {
 
 static void ReservedKeywordTest13(TestCase *this) {
     const char *source = "data";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_DATA, mml_Token_type(token));
@@ -141,7 +141,7 @@ static void ReservedKeywordTest13(TestCase *this) {
 
 static void ReservedKeywordTest14(TestCase *this) {
     const char *source = "newtype";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_NEWTYPE, mml_Token_type(token));
@@ -151,7 +151,7 @@ static void ReservedKeywordTest14(TestCase *this) {
 
 static void ReservedKeywordTest15(TestCase *this) {
     const char *source = "forall";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_FORALL, mml_Token_type(token));
@@ -161,7 +161,7 @@ static void ReservedKeywordTest15(TestCase *this) {
 
 static void PunctuationTest1(TestCase *this) {
     const char *source = "{";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_LEFT_BRACE, mml_Token_type(token));
@@ -171,7 +171,7 @@ static void PunctuationTest1(TestCase *this) {
 
 static void PunctuationTest2(TestCase *this) {
     const char *source = "}";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_RIGHT_BRACE, mml_Token_type(token));
@@ -181,7 +181,7 @@ static void PunctuationTest2(TestCase *this) {
 
 static void PunctuationTest3(TestCase *this) {
     const char *source = "(";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_LEFT_PAREN, mml_Token_type(token));
@@ -191,7 +191,7 @@ static void PunctuationTest3(TestCase *this) {
 
 static void PunctuationTest4(TestCase *this) {
     const char *source = ")";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_RIGHT_PAREN, mml_Token_type(token));
@@ -201,7 +201,7 @@ static void PunctuationTest4(TestCase *this) {
 
 static void PunctuationTest5(TestCase *this) {
     const char *source = ";";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_SEMICOLON, mml_Token_type(token));
@@ -211,7 +211,7 @@ static void PunctuationTest5(TestCase *this) {
 
 static void PunctuationTest6(TestCase *this) {
     const char *source = "*";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_STAR, mml_Token_type(token));
@@ -221,7 +221,7 @@ static void PunctuationTest6(TestCase *this) {
 
 static void PunctuationTest7(TestCase *this) {
     const char *source = ":";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_COLON, mml_Token_type(token));
@@ -231,7 +231,7 @@ static void PunctuationTest7(TestCase *this) {
 
 static void PunctuationTest8(TestCase *this) {
     const char *source = "::";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_ESTI, mml_Token_type(token));
@@ -241,7 +241,7 @@ static void PunctuationTest8(TestCase *this) {
 
 static void PunctuationTest9(TestCase *this) {
     const char *source = "->";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_FN_ARROW, mml_Token_type(token));
@@ -251,7 +251,7 @@ static void PunctuationTest9(TestCase *this) {
 
 static void PunctuationTest10(TestCase *this) {
     const char *source = "-";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_MINUS, mml_Token_type(token));
@@ -261,7 +261,7 @@ static void PunctuationTest10(TestCase *this) {
 
 static void PunctuationTest11(TestCase *this) {
     const char *source = "=";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_EQUAL, mml_Token_type(token));
@@ -271,7 +271,7 @@ static void PunctuationTest11(TestCase *this) {
 
 static void PunctuationTest12(TestCase *this) {
     const char *source = "+";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_PLUS, mml_Token_type(token));
@@ -281,7 +281,7 @@ static void PunctuationTest12(TestCase *this) {
 
 static void PunctuationTest13(TestCase *this) {
     const char *source = "_";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
     assertFalse(mml_Scanner_hasNext(scanner));
     assertEqual(MML_TOKEN_UNDERSCORE, mml_Token_type(token));
@@ -359,30 +359,29 @@ static void ScanTildeTest(TestCase *this) {
     invalidPunctuationTestBody("~");
 }
 
-
-#undef invalidPunctuationTestBody(sym)
+#undef invalidPunctuationTestBody
 
 static void LexBasicConditionalTest(TestCase *this) {
     mml_Token *tokens[7];
     const char *source = "if True\nthen 5\nelse False";
-	mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Scanner *scanner = mml_Scanner_new(source);
     size_t line = 0;
-	int i;
+    int i;
     for (i = 0; mml_Scanner_hasNext(scanner) && i < 7; i++) {
         tokens[i] = mml_Scanner_next(scanner);
         if (mml_Token_line(tokens[i]) != line) {
             line = mml_Token_line(tokens[i]);
         }
-	}
+    }
     tokens[i] = mml_Scanner_next(scanner);
     mml_Scanner_free(scanner);
     assertEqual(i, 6);
 
-	MML_TokenType types[7] = {MML_TOKEN_IF, MML_TOKEN_TRUE,
+    MML_TokenType types[7] = {MML_TOKEN_IF, MML_TOKEN_TRUE,
                               MML_TOKEN_THEN, MML_TOKEN_INTEGER,
                               MML_TOKEN_ELSE, MML_TOKEN_FALSE, MML_TOKEN_EOF};
-	size_t lines[7] = {1, 1, 2, 2, 3, 3, 3};
-	for(i=0; i < 7; i++) {
+    size_t lines[7] = {1, 1, 2, 2, 3, 3, 3};
+    for(i=0; i < 7; i++) {
         assertEqual(mml_Token_type(tokens[i]), types[i]);
         assertEqual(mml_Token_line(tokens[i]), lines[i]);
         mml_Token_free(tokens[i]);
