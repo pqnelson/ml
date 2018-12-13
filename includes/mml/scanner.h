@@ -24,8 +24,8 @@
  * expr = atomic-expr
  *      | abstraction
  *      | application
- *      | "let" vdef "in" expr
- *      | "letrec" vdef "in" expr
+ *      | "let" value-def "in" expr
+ *      | "letrec" value-def "in" expr
  *      | "case" "(" aty ")" expr "of" vbind "{" alternatives "}"
  *      | "if" bool-expr "then" expr "else" expr ;
  *
@@ -50,13 +50,13 @@
  * type = basic-type 
  *      | basic-type "->" type
  *      | "forall" type-binders "." type ;
+ * atomic-type = type-var
+ *             | type-constructor
+ *             | "(" type ")" ;
  * basic-type = "Int" | "Bool"
  *            | atomic-type
  *            | type-application ;
  * type-application = basic-type atomic-type ;
- * atomic-type = type-var
- *             | type-constructor
- *             | "(" type ")" ;
  *
  * kind = atomic-kind
  *      | atomic-kind "->" kind ;
@@ -93,6 +93,8 @@
 
 #ifndef MML_SCANNER_H_
 #define MML_SCANNER_H_
+
+#include "mml/token.h"
 
 typedef struct mml_Scanner {
     const char *start;
