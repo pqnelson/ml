@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -36,10 +37,6 @@ void mml_Scanner_free(mml_Scanner *this) {
     this = NULL;
 }
 
-static bool isWhitespace(char c) {
-    return (c == ' ' || c == '\t' || c == '\r' || c == '\f' || c == '\n');
-}
-
 
 /**
  * Returns @c true if this scanner has another token in its input.
@@ -54,11 +51,11 @@ bool mml_Scanner_hasNext(mml_Scanner *this) {
     bool hasNext = false;
     size_t c;
     for (c = 0; '\0' != this->current[c] && !hasNext; c++) {
-        if (!isWhitespace(this->current[c])) {
+        if (!isspace(this->current[c])) {
             hasNext = true;
         }
     }
-    //@ assert ('\0' != this->current[c]) ==> !isWhitespace(this->current[c])
+    //@ assert ('\0' != this->current[c]) ==> !isspace(this->current[c])
     return hasNext;
 }
 
@@ -101,9 +98,8 @@ enum SKIP_COMMENT_STATUS {
  * a bug.
  */
 static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
-    if (!isCommentStart(this)) return SKIP_COMMENT_SUCCESS;
-
-    // assert "(*" is this->current[0:1]
+    assert (isCommentStart(this));
+    
     enum SKIP_COMMENT_STATUS status;
     size_t depth = 1;
     size_t line = this->line;
@@ -112,29 +108,31 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
     advance(this); // consume '*'
     
     // eat everything in the block comment until corresponding "*)"
-    while (depth > 0 && mml_Scanner_hasNext(this)) {
-        if ('\n' == peek(this)) {
+    for (; depth > 0 && mml_Scanner_hasNext(this); advance(this)) {
+        switch(peek(this)) {
+        case '\n':
             this->line += 1;
-            advance(this);
-        } else if ('(' == peek(this) && '*' == peekNext(this)) {
-            depth += 1;
-            advance(this); // consume '('
-            advance(this); // consume '*'
-        } else if ('*' == peek(this) && ')' == peekNext(this)) {
-            //@ assert (depth > 0)
-            depth -= 1;
-            //@ assert (depth >= 0)
-            advance(this); // consume '*'
-            advance(this); // consume ')'
-        } else {
-            advance(this);
+            break;
+        case '(':
+            if ('*' == peekNext(this)) {
+                depth += 1;
+                advance(this);
+            }
+            break;
+        case '*':
+            if (')' == peekNext(this)) {
+                depth -= 1;
+                advance(this);
+            }
+            break;
+        default: // keep advancing
+            break;
         }
     }
     
     //@ assert mml_Scanner_hasNext(this) ==> (0 == depth)
     if (depth > 0 && !mml_Scanner_hasNext(this)) {
         // handle runaway comments
-        // static const char *suffix = ;
         status = SKIP_COMMENT_RUNAWAY;
         this->current = start; // set current to point to the start of
                                // the runaway
@@ -160,27 +158,12 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
  *          @c false otherwise.
  */
 static bool skipWhitespace(mml_Scanner *this) {
-    bool finished = false;
-    bool hasSkippedWS = false;
-    while (!finished) {
-        char c = peek(this);
-        switch(c) {
-        case ' ':
-        case '\f':
-        case '\r':
-        case '\t':
-            advance(this);
-            hasSkippedWS = true;
-            break;
-        case '\n':
+    bool hasSkippedWS = isspace(peek(this));
+    while (isspace(peek(this))) {
+        if ('\n' == peek(this)) {
             this->line += 1;
-            advance(this);
-            hasSkippedWS = true;
-            break;
-        default:
-            finished = true;
-            break;
         }
+        advance(this);
     }
     return hasSkippedWS;
 }
@@ -190,18 +173,13 @@ static bool skipWhitespace(mml_Scanner *this) {
  * is the scanner experiencing a runaway comment.
  */
 static void skipWhitespaceAndComments(mml_Scanner *this) {
-    bool finished = false;
-    bool hasSkippedWhitespace = false;
+    bool hasSkippedWhitespace;
     enum SKIP_COMMENT_STATUS status;
-    while (!finished) {
-        status = SKIP_COMMENT_NONE_FOUND;
+    do {
         hasSkippedWhitespace = skipWhitespace(this);
-        if (isCommentStart(this)) {
-            status = skipComment(this);
-        }
-        // finished = (no more whitespace) && (no more comments)
-        finished = !hasSkippedWhitespace && (SKIP_COMMENT_SUCCESS != status);
-    }
+        if (isCommentStart(this)) status = skipComment(this);
+        else                      status = SKIP_COMMENT_NONE_FOUND;
+    } while (hasSkippedWhitespace || SKIP_COMMENT_SUCCESS == status);
     // `this->start` looks like "(*" iff experiencing a runaway comment
 }
 
@@ -224,26 +202,6 @@ static MML_TokenType matchKeyword(mml_Scanner *scanner,
     return MML_TOKEN_IDENTIFIER;
 }
 
-static bool isDigit(char c) {
-    return '0' <= c && c <= '9';
-}
-
-static bool isLowerCase(char c) {
-    return 'a' <= c && c <= 'z';
-}
-
-static bool isUpperCase(char c) {
-    return 'A' <= c && c <= 'Z';
-}
-
-static bool isAlpha(char c) {
-    return isLowerCase(c) || isUpperCase(c);
-}
-
-static bool isAlphaNumeric(char c) {
-    return isAlpha(c) || isDigit(c);
-}
-
 /**
  * Following Haskell, allow alphanumerics, apostrophes, and underscores
  * for identifiers.
@@ -251,7 +209,7 @@ static bool isAlphaNumeric(char c) {
  * @see https://www.haskell.org/onlinereport/lexemes.html
  */
 static bool isIdentifierChar(char c) {
-    return (isAlphaNumeric(c) || ('\'' == c) || ('_' == c));
+    return (isalnum(c) || ('\'' == c) || ('_' == c));
 }
 
 /**
@@ -320,19 +278,19 @@ static MML_TokenType scanLexeme(mml_Scanner *scanner) {
 }
 
 static mml_Token* scanNumber(mml_Scanner *scanner) {
-    while (isDigit(peek(scanner))) advance(scanner);
-    //@ assert !isDigit(peek(scanner))
+    while (isdigit(peek(scanner))) advance(scanner);
+    //@ assert !isdigit(peek(scanner))
 
     mml_Token *token;
     /* TODO floating point numbers, for now I'm skipping them */
-    // so "302a" is an error, but "302+" is not
-    if (!mml_Scanner_hasNext(scanner) || !isAlpha(peek(scanner))) {
+    // so "302a" is an error, but "302+" is two tokens "302" and "+"
+    if (!mml_Scanner_hasNext(scanner) || !isalpha(peek(scanner))) {
         token = makeToken(scanner, MML_TOKEN_INTEGER);
     } else {
         //@ assert scanner_hasNext(scanner)
-        //@ assert isAlpha(peek(scanner))
+        //@ assert isalpha(peek(scanner))
         /* e.g., "1foo" is a token error */
-        while (mml_Scanner_hasNext(scanner) && isAlphaNumeric(peek(scanner)))
+        while (mml_Scanner_hasNext(scanner) && isalnum(peek(scanner)))
             advance(scanner);
         token = makeToken(scanner, MML_TOKEN_ERROR);
     }
@@ -344,6 +302,7 @@ static mml_Token* scanString(mml_Scanner *scanner) {
     assert('"' == scanner->current[-1]);
     mml_Token *token;
     size_t line = scanner->line;
+    
     while ('"' != peek(scanner) && mml_Scanner_hasNext(scanner)) {
         if ('\n' == peek(scanner)) {
             scanner->line++;
@@ -455,15 +414,15 @@ mml_Token* mml_Scanner_next(mml_Scanner *this) {
     } else {
         // default case
         char c = advance(this);
-        if (isAlpha(c)) {
+        if (isalpha(c)) {
             MML_TokenType type = scanLexeme(this);
             //@ assert type != MML_TOKEN_ERROR
             token = makeToken(this, type);
             //@ assert mml_Token_isIdentifier(token) || mml_Token_isKeyword(token)
-        } else if (isDigit(c) || ('-' == c && isDigit(peek(this)))) {
+        } else if (isdigit(c) || ('-' == c && isdigit(peek(this)))) {
             token = scanNumber(this);
         } else {
-            //@ assert (!isAlphaNumeric(c))
+            //@ assert (!isalnum(c))
             token = scanSymbol(this);
             //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token)
         }
