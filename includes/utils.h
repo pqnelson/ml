@@ -1,5 +1,5 @@
 /**
- * @file includes/defs.h
+ * @file 
  * 
  * System-independent definitions.
  *
@@ -23,8 +23,8 @@
  * 
  * @author Alex Nelson <pqnelson@gmail.com>
  */
-#ifndef DEFS_H
-#define DEFS_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <time.h> // localtime_s(), localtime(), strftime(), time_t
 #include <stdio.h> // for fprintf(), stderr
@@ -119,6 +119,7 @@ typedef long hash_t;
                           || defined(__WINDOWS__))
 
 int ms_gettimeofday(struct timeval *tv, struct timezone *tz);
+int psql_gettimeofday(struct timeval * tp, struct timezone * tzp);
 void timeToIso8601(time_t time, char *output);
 
-#endif /* DEFS_H */
+#endif /* UTILS_H */

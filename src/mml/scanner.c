@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h> /* memcmp(), strnlen() */
-#include "defs.h"
+#include "utils.h"
 #include "mml/token.h"
 #include "mml/scanner.h"
 

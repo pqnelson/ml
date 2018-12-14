@@ -4,7 +4,7 @@ SRCDIR=src
 OBJDIR=target
 OBJS=$(OBJDIR)/mml/scanner.o \
 	$(OBJDIR)/mml/token.o \
-	$(OBJDIR)/defs.o
+	$(OBJDIR)/utils.o
 TESTS=test/mml/token_test.c \
 	  test/mml/scanner_test.c
 

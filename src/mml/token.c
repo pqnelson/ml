@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h> /* memcmp(), strlen() */
-#include "defs.h"
+#include "utils.h"
 #include "mml/token.h"
 
 /**

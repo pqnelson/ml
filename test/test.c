@@ -22,7 +22,7 @@
 #include <sys/time.h>
 #include <time.h> /* localtime(), localtime_s() for MS */
 #include <string.h>
-#include "defs.h"
+#include "utils.h"
 #include "test.h"
 
 /**
@@ -52,36 +52,7 @@ void TestCase_free(TestCase *test) {
     test = NULL;
 }
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-#include <Windows.h>
-#include <stdint.h>
-/**
- * This workaround is lifted shamelessly from StackOverflow, though
- * PostgreSQL has their own workaround too.
- * 
- * @see https://stackoverflow.com/a/26085827
- * @see https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
- */
-static int psql_gettimeofday(struct timeval * tp, struct timezone * tzp)
-{
-    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
-    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
-    // until 00:00:00 January 1, 1970 
-    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
-
-    SYSTEMTIME  system_time;
-    FILETIME    file_time;
-    uint64_t    time;
-
-    GetSystemTime( &system_time );
-    SystemTimeToFileTime( &system_time, &file_time );
-    time =  ((uint64_t)file_time.dwLowDateTime )      ;
-    time += ((uint64_t)file_time.dwHighDateTime) << 32;
-
-    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
-    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
-    return 0;
-}
+#if WINDOWS_PLATFORM
 #define mark_time ms_gettimeofday
 #else
 #define mark_time gettimeofday

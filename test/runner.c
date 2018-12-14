@@ -4,7 +4,7 @@
 #include <stddef.h> /* offset_t */
 #include <dirent.h>
 #include <errno.h>
-#include "defs.h"
+#include "utils.h"
 #include "test.h"
 #include "testsuites.h"
 struct TestRunner *g_runner;

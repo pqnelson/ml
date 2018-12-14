@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h> /* strlen() */
-#include "defs.h"
+#include "utils.h"
 #include "mml/token.h"
 #include "test.h"
 #include "testsuites.h"

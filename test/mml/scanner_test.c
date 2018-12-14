@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
-#include "defs.h"
+#include "utils.h"
 #include "mml/token.h"
 #include "mml/scanner.h"
 #include "test.h"
