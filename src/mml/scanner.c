@@ -31,6 +31,16 @@ mml_Scanner* mml_Scanner_new(const char *source) {
     return scanner;
 }
 
+/**
+ * Free @c mml_Scanner object.
+ *
+ * This frees the memory allocated for @c this mml_Scanner object, but
+ * @em not for the input stream. Why? Because we might have lingering
+ * mml_Token objects still referencing the input stream.
+ *
+ * @param this The mml_Scanner object to be freed.
+ * @return nothing
+ */
 void mml_Scanner_free(mml_Scanner *this) {
     if (NULL == this) return;
     free(this);
@@ -86,12 +96,40 @@ static bool isCommentStart(mml_Scanner *this) {
     return (('(' == peek(this)) && ('*' == peekNext(this)));
 }
 
+static bool isCommentEnd(mml_Scanner *this) {
+    return (('*' == peek(this)) && (')' == peekNext(this)));
+}
+
 enum SKIP_COMMENT_STATUS {
     SKIP_COMMENT_SUCCESS = 0,
     SKIP_COMMENT_RUNAWAY,
     SKIP_COMMENT_NONE_FOUND
 };
 
+/*@ requires \valid(this);
+  @ behavior newline:
+  @     assumes '\n' == peek(\old(this));
+  @     assigns this->line;
+  @     ensures this->line == 1 + \old(this->line);
+  @     ensures \result == depth;
+  @ behavior increase_depth:
+  @     assumes isCommentStart(\old(this));
+  @     assigns this->current;
+  @     ensures \result == depth + 1;
+  @     ensures !isCommentStart(this);
+  @ behavior decrease_depth:
+  @     assumes isCommentEnd(\old(this));
+  @     assigns this->current;
+  @     ansures \result == depth - 1;
+  @     ensures !isCommentEnd(this);
+  @ behavior default_behavior:
+  @     assumes !isCommentStart(\old(this));
+  @     assumes !isCommentEnd(\old(this));
+  @     assumes '\n' != peek(\old(this));
+  @     ensures \result == depth;
+  @ disjoint behaviors;
+  @ complete behaviors;
+  @*/
 static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
     size_t newDepth = depth;
     switch(peek(this)) {
@@ -122,7 +160,7 @@ static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
  * a bug.
  */
 static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
-    assert (isCommentStart(this));
+    if (!isCommentStart(this)) return SKIP_COMMENT_NONE_FOUND;
     
     enum SKIP_COMMENT_STATUS status;
     size_t depth = 1;
@@ -136,8 +174,7 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
         depth = adjustCommentDepth(this, depth);
     }
     
-    //@ assert mml_Scanner_hasNext(this) ==> (0 == depth)
-    if (depth > 0 && !mml_Scanner_hasNext(this)) {
+    if (depth > 0) {
         // handle runaway comments
         status = SKIP_COMMENT_RUNAWAY;
         // reset the scanner
@@ -183,8 +220,7 @@ static void skipWhitespaceAndComments(mml_Scanner *this) {
     enum SKIP_COMMENT_STATUS status;
     do {
         hasSkippedWhitespace = skipWhitespace(this);
-        if (isCommentStart(this)) status = skipComment(this);
-        else                      status = SKIP_COMMENT_NONE_FOUND;
+        status = skipComment(this);
     } while (hasSkippedWhitespace || SKIP_COMMENT_SUCCESS == status);
     // `this->start` looks like "(*" iff experiencing a runaway comment
 }
