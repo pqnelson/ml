@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Iincludes -Wall -Wextra -Wformat -ansi -std=c99 -pedantic
+CFLAGS=-Iincludes -Wall -Wextra -Wformat -std=c99 -pedantic
 SRCDIR=src
 OBJDIR=target
 OBJS=$(OBJDIR)/mml/scanner.o \
