@@ -92,6 +92,30 @@ enum SKIP_COMMENT_STATUS {
     SKIP_COMMENT_NONE_FOUND
 };
 
+static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
+    size_t newDepth = depth;
+    switch(peek(this)) {
+    case '\n':
+        this->line += 1;
+        break;
+    case '(':
+        if ('*' == peekNext(this)) {
+            newDepth += 1;
+            advance(this);
+        }
+        break;
+    case '*':
+        if (')' == peekNext(this)) {
+            newDepth -= 1;
+            advance(this);
+        }
+        break;
+    default: // keep advancing
+        break;
+    }
+    return newDepth;
+}
+
 /* Caveat: for runaway comments, it DOES NOT skip it. Instead, it sets
  * `this->current` to be the end of the string, and returns a
  * `SKIP_COMMENT_RUNAWAY` status to indicate the scanner has, well, found
@@ -109,34 +133,16 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
     
     // eat everything in the block comment until corresponding "*)"
     for (; depth > 0 && mml_Scanner_hasNext(this); advance(this)) {
-        switch(peek(this)) {
-        case '\n':
-            this->line += 1;
-            break;
-        case '(':
-            if ('*' == peekNext(this)) {
-                depth += 1;
-                advance(this);
-            }
-            break;
-        case '*':
-            if (')' == peekNext(this)) {
-                depth -= 1;
-                advance(this);
-            }
-            break;
-        default: // keep advancing
-            break;
-        }
+        depth = adjustCommentDepth(this, depth);
     }
     
     //@ assert mml_Scanner_hasNext(this) ==> (0 == depth)
     if (depth > 0 && !mml_Scanner_hasNext(this)) {
         // handle runaway comments
         status = SKIP_COMMENT_RUNAWAY;
-        this->current = start; // set current to point to the start of
-                               // the runaway
-        this->line = line; // and reset the line number, for debugging
+        // reset the scanner
+        this->current = start;
+        this->line = line;
     } else {
         status = SKIP_COMMENT_SUCCESS;
     }
