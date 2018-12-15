@@ -4,3 +4,5 @@
 refs/*
 docs/*
 *.o
+test-results/
+doc/html/
