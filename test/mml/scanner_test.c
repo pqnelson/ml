@@ -159,6 +159,16 @@ static void ReservedKeywordTest15(TestCase *this) {
     mml_Token_free(token);
 }
 
+static void OfIsReservedKeywordTest(TestCase *this) {
+    const char *source = "of";
+    mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Token *token = mml_Scanner_next(scanner);
+    assertFalse(mml_Scanner_hasNext(scanner));
+    assertEqual(MML_TOKEN_OF, mml_Token_type(token));
+    mml_Scanner_free(scanner);
+    mml_Token_free(token);
+}
+
 static void PunctuationTest1(TestCase *this) {
     const char *source = "{";
     mml_Scanner *scanner = mml_Scanner_new(source);
@@ -289,6 +299,16 @@ static void PunctuationTest13(TestCase *this) {
     mml_Token_free(token);
 }
 
+static void ScanAtSignTest(TestCase *this) {
+    const char *source = "@";
+    mml_Scanner *scanner = mml_Scanner_new(source);
+    mml_Token *token = mml_Scanner_next(scanner);
+    assertFalse(mml_Scanner_hasNext(scanner));
+    assertEqual(MML_TOKEN_AT_SIGN, mml_Token_type(token));
+    mml_Scanner_free(scanner);
+    mml_Token_free(token);
+}
+
 #define invalidPunctuationTestBody(sym)                      \
     {                                                        \
         const char *source = sym;                            \
@@ -325,10 +345,6 @@ static void ScanRightBracketTest(TestCase *this) {
 
 static void ScanExclamationPointTest(TestCase *this) {
     invalidPunctuationTestBody("!");
-}
-
-static void ScanAtSignTest(TestCase *this) {
-    invalidPunctuationTestBody("@");
 }
 
 static void ScanHashTagTest(TestCase *this) {
@@ -645,6 +661,7 @@ void initScannerSuite() {
     add_test(ReservedKeywordTest13);
     add_test(ReservedKeywordTest14);
     add_test(ReservedKeywordTest15);
+    add_test(OfIsReservedKeywordTest);
     add_test(PunctuationTest1);
     add_test(PunctuationTest2);
     add_test(PunctuationTest3);

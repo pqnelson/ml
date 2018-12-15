@@ -32,6 +32,7 @@ typedef enum {
     MML_TOKEN_RIGHT_BRACE = 9, /* '}' */
     MML_TOKEN_STAR        = 10, /* '*' */
     MML_TOKEN_UNDERSCORE  = 11, /* '_' */
+    MML_TOKEN_AT_SIGN     = 12, /* '@' */
     
     MML_TOKEN_ESTI        = 32, /* "::" */
     MML_TOKEN_FN_ARROW    = 33,
@@ -55,6 +56,7 @@ typedef enum {
     MML_TOKEN_DATA     = 140,
     MML_TOKEN_NEWTYPE  = 141,
     MML_TOKEN_FORALL   = 142,
+    MML_TOKEN_OF       = 143,
 
     MML_TOKEN_KW_END = 192,
     

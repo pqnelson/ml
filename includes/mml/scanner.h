@@ -10,9 +10,10 @@
  *
  * Recall in EBNF, we write <code>{rule}</code> for zero or more
  * instances of <code>rule</code> (right recursively, i.e.,
- * <code> {rules} = opt-rules </code> and <code>opt-rules = | rules</code>,
+ * <code>{rules} = opt-rules</code> and <code>opt-rules = | rules</code>,
  * where <code>rules = rule rules | rule</code> is the right-recursive
  * expansion).
+ * 
  * The EBNF for the grammar is, so far:
  *
  * <pre>
@@ -26,57 +27,56 @@
  *      | application
  *      | "let" value-def "in" expr
  *      | "letrec" value-def "in" expr
- *      | "case" "(" aty ")" expr "of" vbind "{" alternatives "}"
+ *      | "case" "(" atomic-type ")" expr "of" var-binder
+ *            "{" alternatives "}"
  *      | "if" bool-expr "then" expr "else" expr ;
  *
- * abstraction = "fn" var-bind "->" expr ;
- * var-bind = var "::" type ;
+ * abstraction = "fn" var-binder "->" expr ;
+ * var-binder = var "::" type ;
  * 
  * application = atomic-expr args ;
- * args = arg | arg args ;
+ * args = arg {arg} ;
  * arg = atomic-expr ;
  *
- * alternatives = alternative ";" alternatives
- *              | alternative ";" ;
- * alternative = data-constructor type-binders var-binders "->" expr
+ * alternatives = alternative {";" alternative} ;
+ * alternative = data-constructor {"@" type-binder} {var-binder} "->" expr
  *             | literal "->" expr
  *             | "_" "->" expr ;
- * var-binders = var-binder var-binders | var-binder ;
- * type-binders = type-binder type-binders | type-binder ;
- * opt-type-binders = | type-binders ;
+ * type-binders = type-binder {type-binder} ;
  * type-binder = type-var
  *             | "(" type-var "::" kind ")" ;
- * 
- * type = basic-type 
- *      | basic-type "->" type
- *      | "forall" type-binders "." type ;
- * atomic-type = type-var
- *             | type-constructor
- *             | "(" type ")" ;
- * basic-type = "Int" | "Bool"
- *            | atomic-type
- *            | type-application ;
- * type-application = basic-type atomic-type ;
  *
  * kind = atomic-kind
  *      | atomic-kind "->" kind ;
  * atomic-kind = "*"
- *             | equality-kind
  *             | "(" kind ")" ;
- * equality-kind = basic-type ":=:" basic-type ;
+ * 
+ * type = basic-type 
+ *      | basic-type "->" type
+ *      | "forall" type-binders "." type ;
+ * basic-type = "Int" | "Bool"
+ *            | atomic-type
+ *            | type-application ;
+ * type-application = basic-type atomic-type ;
+ * atomic-type = type-var
+ *             | type-constructor
+ *             | "(" type ")" ;
  * 
  * definition = value-def
  *            | type-def ;
  * 
  * value-def = var "::" type "=" expr ;
+ * 
+ * type-def = "data" type-constructor {type-binder}
+ *                "=" "{" constructor-defs "}"
+ *          | "newtype" type-constructor type-constructor {type-binder}
+ *                "=" type ;
+ * constructor-defs = constructor-def {";" constructor-def} ;
+ * constructor-def = data-constructor {"@" type-binder} atomic-types ;
+ * atomic-types = atomic-type {atomic-type} ;
  *
- * type-def = "data" type-constructor opt-type-binders "=" constructor-defs
- *          | "newtype" type-constructor type-constructor opt-type-binders "=" type ;
- * constructor-defs = constructor-def constructor-defs
- *                  | constructor-def ;
- * constructor-def = data-constructor { "@" type-binder } atomic-types ;
- * atomic-types = atomic-type atomic-types | atomic-type ;
- * program = definition ";" | definition ";" program ;
+ * 
+ * program = definition {";" definition} ;
  * 
  * start = program ;
  * </pre>

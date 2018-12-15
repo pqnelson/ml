@@ -267,6 +267,8 @@ static MML_TokenType scanLexeme(mml_Scanner *scanner) {
         break;
     case 'n':
         return matchKeyword(scanner, 1, 6, "ewtype", MML_TOKEN_NEWTYPE);  
+    case 'o':
+        return matchKeyword(scanner, 1, 1, "f", MML_TOKEN_OF);
     case 't':
         return matchKeyword(scanner, 1, 3, "hen", MML_TOKEN_THEN);
     case 'B':
@@ -337,31 +339,17 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
     case '"':
         token = scanString(scanner);
         break;
-    case '{':
-        token = makeToken(scanner, MML_TOKEN_LEFT_BRACE);
-        break;
-    case '}':
-        token = makeToken(scanner, MML_TOKEN_RIGHT_BRACE);
-        break;
     case '(':
         token = makeToken(scanner, MML_TOKEN_LEFT_PAREN);
         break;
     case ')':
         token = makeToken(scanner, MML_TOKEN_RIGHT_PAREN);
         break;
-    case ';':
-        token = makeToken(scanner, MML_TOKEN_SEMICOLON);
-        break;
     case '*':
         token = makeToken(scanner, MML_TOKEN_STAR);
         break;
-    case ':':
-        if (':' == peek(scanner)) {
-            advance(scanner);
-            token = makeToken(scanner, MML_TOKEN_ESTI);
-        } else {
-            token = makeToken(scanner, MML_TOKEN_COLON);
-        }
+    case '+':
+        token = makeToken(scanner, MML_TOKEN_PLUS);
         break;
     case '-':
         if ('>' == peek(scanner)) {
@@ -371,17 +359,34 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
             token = makeToken(scanner, MML_TOKEN_MINUS);
         }
         break;
-    case '_':
-        token = makeToken(scanner, MML_TOKEN_UNDERSCORE);
+    case ':':
+        if (':' == peek(scanner)) {
+            advance(scanner);
+            token = makeToken(scanner, MML_TOKEN_ESTI);
+        } else {
+            token = makeToken(scanner, MML_TOKEN_COLON);
+        }
+        break;
+    case ';':
+        token = makeToken(scanner, MML_TOKEN_SEMICOLON);
         break;
     case '=':
         token = makeToken(scanner, MML_TOKEN_EQUAL);
         break;
-    case '+':
-        token = makeToken(scanner, MML_TOKEN_PLUS);
+    case '@':
+        token = makeToken(scanner, MML_TOKEN_AT_SIGN);
+        break;
+    case '_':
+        token = makeToken(scanner, MML_TOKEN_UNDERSCORE);
+        break;
+    case '{':
+        token = makeToken(scanner, MML_TOKEN_LEFT_BRACE);
+        break;
+    case '}':
+        token = makeToken(scanner, MML_TOKEN_RIGHT_BRACE);
         break;
     default:
-        // scanner->start[0] is one of these:  ?<>'[]!@#$%^&`~
+        // scanner->start[0] is one of these:  ?<>'[]!#$%^&`~
         // when all else fails, it's an error token
         token = makeToken(scanner, MML_TOKEN_ERROR);
         break;
