@@ -159,21 +159,28 @@ static size_t commentStartIndicator(const char *start, size_t offset) {
         return 0;
     }
 }
+
+/*@ logic integer commentStarts(const char *c, size_t offset) =
+  @   ('('==start[offset] && '*' == start[offset+1]) ? 1 : 0 ;
+  @*/
+/*@ logic integer numOfCommentStarts(const char *start, size_t length) =
+  @   \numof(0, length, \lambda size_t k ; commentStarts(start, k));
+  @*/
 /*@ requires \valid(start) && \valid(end);
   @ behavior exception:
   @   assumes start >= end;
   @   ensures 0 == \result;
   @ behavior default:
   @   assumes start < end;
-  @   ensures \result == \numof(0, (size_t)(end - start), \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0);
-  @ disjoint behaviors
-  @ complete behaviors
+  @   ensures \result == numOfCommentStarts(start, (size_t)(end - start));
+  @ disjoint behaviors;
+  @ complete behaviors;
   @*/
 static size_t countCommentStarts(const char *start, const char *end) {
     if (start >= end) return 0;
     size_t counter = 0;
     size_t length = (size_t)(end - start);
-    //@ loop invariant counter == \numof(0, c, \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0)
+    //@ loop invariant counter == numOfCommentStarts(start, c);
     for (size_t c = 0; length > c; c++) {
         if ('('==start[c] && '*' == start[c+1]) {
             counter = counter + 1;
@@ -183,21 +190,28 @@ static size_t countCommentStarts(const char *start, const char *end) {
     return counter;
 }
 
-/*@ requires \valid(start) && \valid(end)
+
+/*@ logic integer commentEnds(const char *c, size_t offset) =
+  @   ('*'==start[offset] && ')' == start[offset+1]) ? 1 : 0 ;
+  @*/
+/*@ logic integer numOfCommentEnds(const char *start, size_t length) =
+  @   \numof(0, length, \lambda size_t k ; commentEnds(start, k));
+  @*/
+/*@ requires \valid(start) && \valid(end);
   @ behavior exception:
   @   assumes start >= end;
   @   ensures 0 == \result;
   @ behavior default:
   @   assumes start < end;
-  @   ensures \result == \numof(0, (size_t)(end - start), \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0);
-  @ disjoint behaviors
-  @ complete behaviors
+  @   ensures \result == numOfCommentEnds(start, (size_t)(end - start));
+  @ disjoint behaviors;
+  @ complete behaviors;
   @*/
 static size_t countCommentEnds(const char *start, const char *end) {
     if (start >= end) return 0;
     size_t counter = 0;
-    //@ loop invariant counter == \numof(0, c, \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0)
     size_t length = (size_t)(end - start);
+    //@ loop invariant counter == numOfCommentEnds(start, c);
     for (size_t c = 0; length > c; c++) {
         if ('*'==start[c] && ')' == start[c+1]) {
             counter = counter + 1;
@@ -207,8 +221,8 @@ static size_t countCommentEnds(const char *start, const char *end) {
     return counter;
 }
 
-/*@ requires \valid(str)
-  @ ensures \result == (\numof(0, (size_t)(end - start), \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0) <= \numof(0, (size_t)(end - start), \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0));
+/*@ requires \valid(str);
+  @ ensures \result == (numOfCommentStarts(str, strlen(str)) <= numOfCommendEnds(str, strlen(str)));
   @*/
 static bool hasBalancedComments(const char *str) {
     size_t len = strlen(str) + 1;
