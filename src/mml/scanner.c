@@ -76,7 +76,7 @@ bool mml_Scanner_hasNext(mml_Scanner *this) {
   @ ensures \result == this->current[0]
   @*/
 static char peek(mml_Scanner *this) {
-    assert(NULL != this);
+    if (NULL == this) return '\0';
     return this->current[0];
 }
 
@@ -84,10 +84,8 @@ static char peekNext(mml_Scanner *this) {
     return (mml_Scanner_hasNext(this) ? this->current[1] : '\0');
 }
 
-/**
- * @return The current character the scanner is pointing at
- */
 static char advance(mml_Scanner *this) {
+    if (NULL == this) return '\0';
     this->current++;
     return this->current[-1];
 }
@@ -154,54 +152,132 @@ static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
     return newDepth;
 }
 
+static size_t commentStartIndicator(const char *start, size_t offset) {
+    if ('(' == start[offset] && '*' == start[offset+1]) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+/*@ requires \valid(start) && \valid(end);
+  @ behavior exception:
+  @   assumes start >= end;
+  @   ensures 0 == \result;
+  @ behavior default:
+  @   assumes start < end;
+  @   ensures \result == \numof(0, (size_t)(end - start), \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0);
+  @ disjoint behaviors
+  @ complete behaviors
+  @*/
+static size_t countCommentStarts(const char *start, const char *end) {
+    if (start >= end) return 0;
+    size_t counter = 0;
+    size_t length = (size_t)(end - start);
+    //@ loop invariant counter == \numof(0, c, \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0)
+    for (size_t c = 0; length > c; c++) {
+        if ('('==start[c] && '*' == start[c+1]) {
+            counter = counter + 1;
+            c++;
+        }
+    }
+    return counter;
+}
+
+/*@ requires \valid(start) && \valid(end)
+  @ behavior exception:
+  @   assumes start >= end;
+  @   ensures 0 == \result;
+  @ behavior default:
+  @   assumes start < end;
+  @   ensures \result == \numof(0, (size_t)(end - start), \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0);
+  @ disjoint behaviors
+  @ complete behaviors
+  @*/
+static size_t countCommentEnds(const char *start, const char *end) {
+    if (start >= end) return 0;
+    size_t counter = 0;
+    //@ loop invariant counter == \numof(0, c, \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0)
+    size_t length = (size_t)(end - start);
+    for (size_t c = 0; length > c; c++) {
+        if ('*'==start[c] && ')' == start[c+1]) {
+            counter = counter + 1;
+            c++;
+        }
+    }
+    return counter;
+}
+
+/*@ requires \valid(str)
+  @ ensures \result == (\numof(0, (size_t)(end - start), \lambda size_t k ; ('('==start[k] && '*' == start[k+1]) ? 1 : 0) <= \numof(0, (size_t)(end - start), \lambda size_t k ; ('*'==start[k] && ')' == start[k+1]) ? 1 : 0));
+  @*/
+static bool hasBalancedComments(const char *str) {
+    size_t len = strlen(str) + 1;
+    return countCommentStarts(str, str + len) <= countCommentEnds(str, str + len);
+}
+
 /* Caveat: for runaway comments, it DOES NOT skip it. Instead, it sets
  * `this->current` to be the end of the string, and returns a
  * `SKIP_COMMENT_RUNAWAY` status to indicate the scanner has, well, found
  * a bug.
  */
+/*@ requires \valid(this);
+  @ behavior skip_comment:
+  @   assumes !isCommentStart(this);
+  @   ensures SKIP_COMMENT_NONE_FOUND == \result;
+  @ behavior runaway_comment:
+  @   assumes isCommentStart(this);
+  @   assumes !hasBalancedComments(this->current);
+  @   ensures this->current == \old(this)->current;
+  @   ensures SKIP_COMMENT_RUNAWAY == \result;
+  @ behavior default:
+  @   assumes isCommentStart(this);
+  @   assumes hasBalancedComments(this->current);
+  @   assigns this->current;
+  @   ensures SKIP_COMMENT_SUCCESS == \result;
+  @ disjoint behaviors;
+  @ complete behaviors;
+  @*/
 static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
     if (!isCommentStart(this)) return SKIP_COMMENT_NONE_FOUND;
+    //@ assert isCommentStart(this)
     
     enum SKIP_COMMENT_STATUS status;
     size_t depth = 1;
     size_t line = this->line;
-    const char *start = this->current;
+    const char *current = this->current;
     advance(this); // consume '('
     advance(this); // consume '*'
+    //@ assert !isCommentStart(this) && 1 == depth
     
     // eat everything in the block comment until corresponding "*)"
+    //@ invariant depth == countCommentStarts(current, this->current) - countCommentEnds(current, this->current)
     for (; depth > 0 && mml_Scanner_hasNext(this); advance(this)) {
         depth = adjustCommentDepth(this, depth);
     }
     
     if (depth > 0) {
+        //@ assert countCommentStarts(current, this->current) > countCommentEnds(current, this->current)
+        //@ assert !hasBalancedComments(current);
         // handle runaway comments
         status = SKIP_COMMENT_RUNAWAY;
         // reset the scanner
-        this->current = start;
+        this->current = current;
         this->line = line;
     } else {
+        //@ assert countCommentStarts(current, this->current) == countCommentEnds(current, this->current)
+        //@ assert hasBalancedComments(current);
         status = SKIP_COMMENT_SUCCESS;
     }
     return status;
 }
-
-
-/**
- * Have a scanner skip over whitespace.
- *
- * If the given @c mml_Scanner object's current pointer is currently at a
- * whitespace character, then update it to point at the first non-whitespace
- * character. Otherwise, do not mutate the object.
- *
- * Returns @c true if and only if the @c mml_Scanner object has been mutated.
- * 
- * @param this A valid @c mml_Scanner which will skip over whitespace.
- * @returns @c true if any amount of whitespace has been skipped,
- *          @c false otherwise.
- */
+/*@ requires \valid(this);
+  @ ensures for c in (\old(this)->current..this->current), isspace(c);
+  @ ensures \result == (\old(this)->current != this->current);
+  @*/
 static bool skipWhitespace(mml_Scanner *this) {
     bool hasSkippedWS = isspace(peek(this));
+
+    //@ loop invariant for c in (current..this->current), isspace(c);
     while (isspace(peek(this))) {
         if ('\n' == peek(this)) {
             this->line += 1;
@@ -215,6 +291,16 @@ static bool skipWhitespace(mml_Scanner *this) {
  * start. So if the `result->start` starts with "(*", then AND ONLY THEN
  * is the scanner experiencing a runaway comment.
  */
+/*@ requires \valid(this);
+  @ behavior does_nothing:
+  @     assumes !isspace(peek(\old(this))) && !isCommentStart(\old(this));
+  @ behavior default:
+  @     assumes isspace(peek(\old(this))) || isCommentStart(\old(this));
+  @     assigns this->current;
+  @     ensures isCommentStart(this) || (!isCommentStart(this) && !isspace(peek(this)));
+  @ complete behaviors;
+  @ disjoint behaviors;
+  @*/
 static void skipWhitespaceAndComments(mml_Scanner *this) {
     bool hasSkippedWhitespace;
     enum SKIP_COMMENT_STATUS status;
@@ -224,7 +310,6 @@ static void skipWhitespaceAndComments(mml_Scanner *this) {
     } while (hasSkippedWhitespace || SKIP_COMMENT_SUCCESS == status);
     // `this->start` looks like "(*" iff experiencing a runaway comment
 }
-
 
 static mml_Token* makeToken(mml_Scanner *this, MML_TokenType type) {
     size_t length = (size_t)((this->current) - (this->start));
@@ -244,12 +329,7 @@ static MML_TokenType matchKeyword(mml_Scanner *scanner,
     return MML_TOKEN_IDENTIFIER;
 }
 
-/**
- * Following Haskell, allow alphanumerics, apostrophes, and underscores
- * for identifiers.
- *
- * @see https://www.haskell.org/onlinereport/lexemes.html
- */
+// See https://www.haskell.org/onlinereport/lexemes.html
 static bool isIdentifierChar(char c) {
     return (isalnum(c) || ('\'' == c) || ('_' == c));
 }
@@ -431,6 +511,14 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
     return token;
 }
 
+/*@ requires \valid(this);
+  @ requires isCommentStart(this);
+  @ requires this->start == this->current;
+  @ ensures \valid(\result);
+  @ ensures mml_Token_isError(\result);
+  @ ensures mml_Token_length(\result) == strlen(this->start);
+  @ ensures \result->start == this->start;
+  @*/
 static mml_Token* handleRunawayComment(mml_Scanner *this) {
     assert (isCommentStart(this)); // precondition
     // runaway comment!
@@ -468,12 +556,13 @@ mml_Token* mml_Scanner_next(mml_Scanner *this) {
             //@ assert mml_Token_isIdentifier(token) || mml_Token_isKeyword(token)
         } else if (isdigit(c) || ('-' == c && isdigit(peek(this)))) {
             token = scanNumber(this);
+            //@ assert mml_Token_isNumber(token) || mml_Token_isError(token)
         } else {
-            //@ assert (!isalnum(c))
+            //@ assert (!isalnum(c)) || ('-' == c && !isdigit(peek(this)))
             token = scanSymbol(this);
             //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token)
         }
     }
-    // assert NULL != token
+    //@ assert NULL != token
     return token;
 }
