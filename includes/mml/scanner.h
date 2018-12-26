@@ -102,10 +102,47 @@ typedef struct mml_Scanner {
     size_t line;
 } mml_Scanner;
 
+/**
+ * Constructs scanner for input buffer.
+ *
+ * Constructs a new @c mml_Scanner that produces @c mml_Token values
+ * from the specified input source.
+ *
+ * @param source An input stream to be scanned.
+ */
 mml_Scanner* mml_Scanner_new(const char *source);
+
+/**
+ * Free @c mml_Scanner object.
+ *
+ * This frees the memory allocated for @c this mml_Scanner object, but
+ * @em not for the input stream. Why? Because we might have lingering
+ * mml_Token objects still referencing the input stream.
+ *
+ * @param this The mml_Scanner object to be freed.
+ * @return nothing
+ */
 void mml_Scanner_free(mml_Scanner *this);
 
+/**
+ * Returns @c true if this scanner has another token in its input.
+ *
+ * When the scanner is at the end, it returns only @c false.
+ * 
+ * @param this The mml_Scanner object being inspected
+ * @return true if the scanner has another token
+ */
 bool mml_Scanner_hasNext(mml_Scanner *this);
+
+/**
+ * Produce the next token on demand.
+ *
+ * Finds and returns the next token from the scanner. When the scanner has
+ * "finished", it will only produce EOF tokens.
+ *
+ * @param this The mml_Scanner object in question.
+ * @return A pointer to the next mml_Token object.
+ */
 mml_Token* mml_Scanner_next(mml_Scanner *this);
 
 #endif /* MML_SCANNER_H_ */
