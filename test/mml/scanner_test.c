@@ -9,7 +9,7 @@
 // cl /Za /W4 -I .\includes src/scanner_test.c src/scanner.c /link /out:program1.exe
 // The "/Za" option forces C89 compliance, which is a double edged sword...
 
-static void ReservedKeywordTest1(TestCase *this) {
+static void TrueIsReservedKeywordTest(TestCase *this) {
     const char *source = "True";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -19,7 +19,7 @@ static void ReservedKeywordTest1(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest2(TestCase *this) {
+static void FalseIsReservedKeywordTest(TestCase *this) {
     const char *source = "False";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -29,7 +29,7 @@ static void ReservedKeywordTest2(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest3(TestCase *this) {
+static void IntIsReservedKeywordTest(TestCase *this) {
     const char *source = "Int";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -39,7 +39,7 @@ static void ReservedKeywordTest3(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest4(TestCase *this) {
+static void BoolIsReservedKeywordTest(TestCase *this) {
     const char *source = "Bool";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -49,7 +49,7 @@ static void ReservedKeywordTest4(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest5(TestCase *this) {
+static void FnIsReservedKeywordTest(TestCase *this) {
     const char *source = "fn";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -59,7 +59,7 @@ static void ReservedKeywordTest5(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest6(TestCase *this) {
+static void IfIsReservedKeywordTest(TestCase *this) {
     const char *source = "if";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -69,7 +69,7 @@ static void ReservedKeywordTest6(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest7(TestCase *this) {
+static void ThenIsReservedKeywordTest(TestCase *this) {
     const char *source = "then";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -79,7 +79,7 @@ static void ReservedKeywordTest7(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest8(TestCase *this) {
+static void ElseIsReservedKeywordTest(TestCase *this) {
     const char *source = "else";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -89,7 +89,7 @@ static void ReservedKeywordTest8(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest9(TestCase *this) {
+static void LetIsReservedKeywordTest(TestCase *this) {
     const char *source = "let";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -99,7 +99,7 @@ static void ReservedKeywordTest9(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest10(TestCase *this) {
+static void LetRecIsReservedKeywordTest(TestCase *this) {
     const char *source = "letrec";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -109,7 +109,7 @@ static void ReservedKeywordTest10(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest11(TestCase *this) {
+static void InIsReservedKeywordTest(TestCase *this) {
     const char *source = "in";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -119,7 +119,7 @@ static void ReservedKeywordTest11(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest12(TestCase *this) {
+static void CaseIsReservedKeywordTest(TestCase *this) {
     const char *source = "case";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -129,7 +129,7 @@ static void ReservedKeywordTest12(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest13(TestCase *this) {
+static void DataIsReservedKeywordTest(TestCase *this) {
     const char *source = "data";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -139,7 +139,7 @@ static void ReservedKeywordTest13(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest14(TestCase *this) {
+static void NewtypeIsReservedKeywordTest(TestCase *this) {
     const char *source = "newtype";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -149,7 +149,7 @@ static void ReservedKeywordTest14(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ReservedKeywordTest15(TestCase *this) {
+static void ForallIsReservedKeywordTest(TestCase *this) {
     const char *source = "forall";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -169,7 +169,7 @@ static void OfIsReservedKeywordTest(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest1(TestCase *this) {
+static void LeftBraceIsPunctuationTest(TestCase *this) {
     const char *source = "{";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -179,7 +179,7 @@ static void PunctuationTest1(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest2(TestCase *this) {
+static void RightBraceIsPunctuationTest(TestCase *this) {
     const char *source = "}";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -189,7 +189,7 @@ static void PunctuationTest2(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest3(TestCase *this) {
+static void LeftParenIsPunctuationTest(TestCase *this) {
     const char *source = "(";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -199,7 +199,7 @@ static void PunctuationTest3(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest4(TestCase *this) {
+static void RightParenIsPunctuationTest(TestCase *this) {
     const char *source = ")";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -209,7 +209,7 @@ static void PunctuationTest4(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest5(TestCase *this) {
+static void SemicolonIsPunctuationTest(TestCase *this) {
     const char *source = ";";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -219,7 +219,7 @@ static void PunctuationTest5(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest6(TestCase *this) {
+static void StarIsPunctuationTest(TestCase *this) {
     const char *source = "*";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -229,7 +229,7 @@ static void PunctuationTest6(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest7(TestCase *this) {
+static void ColonIsPunctuationTest(TestCase *this) {
     const char *source = ":";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -239,7 +239,7 @@ static void PunctuationTest7(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest8(TestCase *this) {
+static void EstiIsPunctuationTest(TestCase *this) {
     const char *source = "::";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -249,7 +249,7 @@ static void PunctuationTest8(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest9(TestCase *this) {
+static void FnArrowIsPunctuationTest(TestCase *this) {
     const char *source = "->";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -259,7 +259,7 @@ static void PunctuationTest9(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest10(TestCase *this) {
+static void MinusIsPunctuationTest(TestCase *this) {
     const char *source = "-";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -269,7 +269,7 @@ static void PunctuationTest10(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest11(TestCase *this) {
+static void EqualsIsPunctuationTest(TestCase *this) {
     const char *source = "=";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -279,7 +279,7 @@ static void PunctuationTest11(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest12(TestCase *this) {
+static void PlusIsPunctuationTest(TestCase *this) {
     const char *source = "+";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -289,7 +289,7 @@ static void PunctuationTest12(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void PunctuationTest13(TestCase *this) {
+static void UnderscoreIsPunctuationTest(TestCase *this) {
     const char *source = "_";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -467,7 +467,7 @@ static void SkipWhitespaceTest3(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void SkipCommentTest1(TestCase *this) {
+static void SkipSimpleCommentTest(TestCase *this) {
     const char *source = "(*this will be thrown away*)iff";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -480,7 +480,7 @@ static void SkipCommentTest1(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void SkipCommentTest2(TestCase *this) {
+static void SkipNestedCommentTest(TestCase *this) {
     const char *source = "(*this (*will (*be*) thrown*) away*)iff";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -493,7 +493,7 @@ static void SkipCommentTest2(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void SkipCommentTest3(TestCase *this) {
+static void RunawayCommentTest(TestCase *this) {
     const char *source = "(*this (*will (*be*) thrown*) runaway";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -506,7 +506,7 @@ static void SkipCommentTest3(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ScanFormTest1(TestCase *this) {
+static void ScanDeclarationTest(TestCase *this) {
     const char *source = "Fork :: Bintree a -> Bintree a -> Bintree a;";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token[11];
@@ -530,7 +530,7 @@ static void ScanFormTest1(TestCase *this) {
     }
 }
 
-static void ScanNumberTest1(TestCase *this) {
+static void ScanPositiveIntegerTest(TestCase *this) {
     const char *source = "13";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -543,7 +543,7 @@ static void ScanNumberTest1(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ScanNumberTest2(TestCase *this) {
+static void ScanNegativeIntegerTest(TestCase *this) {
     const char *source = "-13";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -556,7 +556,7 @@ static void ScanNumberTest2(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ScanNumberTest3(TestCase *this) {
+static void InvalidNumberTest(TestCase *this) {
     const char *source = "13a";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -569,7 +569,7 @@ static void ScanNumberTest3(TestCase *this) {
     mml_Token_free(token);
 }
 
-static void ScanNumberTest4(TestCase *this) {
+static void AddingTwoNumbersTest(TestCase *this) {
     const char *source = "13+2";
     mml_Scanner *scanner = mml_Scanner_new(source);
     mml_Token *token = mml_Scanner_next(scanner);
@@ -646,35 +646,35 @@ void initScannerSuite() {
     TestSuite* currentSuite;
     suite(currentSuite);
 
-    add_test(ReservedKeywordTest1);
-    add_test(ReservedKeywordTest2);
-    add_test(ReservedKeywordTest3);
-    add_test(ReservedKeywordTest4);
-    add_test(ReservedKeywordTest5);
-    add_test(ReservedKeywordTest6);
-    add_test(ReservedKeywordTest7);
-    add_test(ReservedKeywordTest8);
-    add_test(ReservedKeywordTest9);
-    add_test(ReservedKeywordTest10);
-    add_test(ReservedKeywordTest11);
-    add_test(ReservedKeywordTest12);
-    add_test(ReservedKeywordTest13);
-    add_test(ReservedKeywordTest14);
-    add_test(ReservedKeywordTest15);
+    add_test(TrueIsReservedKeywordTest);
+    add_test(FalseIsReservedKeywordTest);
+    add_test(IntIsReservedKeywordTest);
+    add_test(BoolIsReservedKeywordTest);
+    add_test(FnIsReservedKeywordTest);
+    add_test(IfIsReservedKeywordTest);
+    add_test(ThenIsReservedKeywordTest);
+    add_test(ElseIsReservedKeywordTest);
+    add_test(LetIsReservedKeywordTest);
+    add_test(LetRecIsReservedKeywordTest);
+    add_test(InIsReservedKeywordTest);
+    add_test(CaseIsReservedKeywordTest);
+    add_test(DataIsReservedKeywordTest);
+    add_test(NewtypeIsReservedKeywordTest);
+    add_test(ForallIsReservedKeywordTest);
     add_test(OfIsReservedKeywordTest);
-    add_test(PunctuationTest1);
-    add_test(PunctuationTest2);
-    add_test(PunctuationTest3);
-    add_test(PunctuationTest4);
-    add_test(PunctuationTest5);
-    add_test(PunctuationTest6);
-    add_test(PunctuationTest7);
-    add_test(PunctuationTest8);
-    add_test(PunctuationTest9);
-    add_test(PunctuationTest10);
-    add_test(PunctuationTest11);
-    add_test(PunctuationTest12);
-    add_test(PunctuationTest13);
+    add_test(LeftBraceIsPunctuationTest);
+    add_test(RightBraceIsPunctuationTest);
+    add_test(LeftParenIsPunctuationTest);
+    add_test(RightParenIsPunctuationTest);
+    add_test(SemicolonIsPunctuationTest);
+    add_test(StarIsPunctuationTest);
+    add_test(ColonIsPunctuationTest);
+    add_test(EstiIsPunctuationTest);
+    add_test(FnArrowIsPunctuationTest);
+    add_test(MinusIsPunctuationTest);
+    add_test(EqualsIsPunctuationTest);
+    add_test(PlusIsPunctuationTest);
+    add_test(UnderscoreIsPunctuationTest);
     add_test(ScanQuestionMarkTest);
     add_test(ScanGTTest);
     add_test(ScanLTTest);
@@ -696,14 +696,14 @@ void initScannerSuite() {
     add_test(SkipWhitespaceTest1);
     add_test(SkipWhitespaceTest2);
     add_test(SkipWhitespaceTest3);
-    add_test(SkipCommentTest1);
-    add_test(SkipCommentTest2);
-    add_test(SkipCommentTest3);
-    add_test(ScanFormTest1);
-    add_test(ScanNumberTest1);
-    add_test(ScanNumberTest2);
-    add_test(ScanNumberTest3);
-    add_test(ScanNumberTest4);
+    add_test(SkipSimpleCommentTest);
+    add_test(SkipNestedCommentTest);
+    add_test(RunawayCommentTest);
+    add_test(ScanDeclarationTest);
+    add_test(ScanPositiveIntegerTest);
+    add_test(ScanNegativeIntegerTest);
+    add_test(InvalidNumberTest);
+    add_test(AddingTwoNumbersTest);
     add_test(ScanStringTest1);
     add_test(ScanNestedStringTest);
     add_test(ScanRunawayStringTest);
