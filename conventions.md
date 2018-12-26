@@ -60,6 +60,10 @@
       `Class_equals(a, b)` should return `true`.
   - `char* Class_toString(Class *this)` produces a _new_ string
     representation of the object `this`
+- **Comments.** There are two types of comments in the program, namely
+  Doxygen documentation comments and ACSL assertions. All the
+  documentation comments are placed in header files, and all the ACSL
+  contracts are placed in source files.
 
 ## Unit Testing
 
