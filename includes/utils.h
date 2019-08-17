@@ -8,7 +8,7 @@
  *
  * Don't expose this to the children...
  * 
- * @section sec Exit Codes
+ * @section exitcodesSec Exit Codes
  *
  * We have "standardized" exit codes, depending on what errors occur.
  * (Success is always <code>EXIT_SUCCESS</code>, quite boring.)
@@ -20,7 +20,16 @@
  * @c EX_OSERR since such a failure is a specific instance of an OS error).
  *
  * @see https://www.freebsd.org/cgi/man.cgi?query=sysexits
- * 
+ *
+ * @section timeofdaySec Time of Day
+ *
+ * System-dependent implementations of @c gettimeofday() functionality.
+ * Linux happily provides such functionality; but Windows, alas, does not.
+ *
+ * These wrapper functions adhere to the open group specification.
+ *
+ * @see http://pubs.opengroup.org/onlinepubs/009695399/functions/gettimeofday.html
+ *
  * @author Alex Nelson <pqnelson@gmail.com>
  */
 #ifndef UTILS_H
@@ -118,8 +127,30 @@ typedef long hash_t;
                           || defined(__WIN32__) || defined(__TOS_WIN__) \
                           || defined(__WINDOWS__))
 
+#if WINDOWS_PLATFORM
+/**
+ * Equivalent of @c gettimeday() for Windows.
+ *
+ * @see https://stackoverflow.com/a/26085827
+ */
 int ms_gettimeofday(struct timeval *tv, struct timezone *tz);
+
+/**
+ * This workaround is lifted shamelessly from StackOverflow, though
+ * PostgreSQL has their own workaround too.
+ * 
+ * @see https://stackoverflow.com/a/26085827
+ * @see https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
+ */
 int psql_gettimeofday(struct timeval * tp, struct timezone * tzp);
+#endif /* WINDOWS_PLATFORM */
+
+/**
+ * Writes the given time to an output string in ISO8601 format.
+ *
+ * @param time The given time to format
+ * @param output A <code>malloc</code>'d buffer at least 29 characters big.
+ */
 void timeToIso8601(time_t time, char *output);
 
 #endif /* UTILS_H */

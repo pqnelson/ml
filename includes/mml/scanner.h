@@ -1,18 +1,24 @@
 /**
- * @file includes/mml/scanner.h
+ * @file
  * 
  * Lexical scanner for Mini-ML.
  *
  * Responsible for reading an input stream, and producing @c mml_Token
  * objects on demand (i.e., lazily).
  * 
- * @section subsection Mini-ML Grammar
+ * @section mmlGrammarSec Mini-ML Grammar
  *
  * Recall in EBNF, we write <code>{rule}</code> for zero or more
  * instances of <code>rule</code> (right recursively, i.e.,
- * <code>{rules} = opt-rules</code> and <code>opt-rules = | rules</code>,
- * where <code>rules = rule rules | rule</code> is the right-recursive
- * expansion).
+ * <code>{rules}</code> corresponds to the BNF rule
+ * <code>&lt;opt-rules&gt;</code> defined as
+ * <code>&lt;opt-rules&gt; = &lt;blank&gt; | &lt;rules&gt;</code>, where
+ * <code>&lt;rules&gt; = &lt;rule&gt; &lt;rules&gt; | &lt;rule&gt;</code>
+ * is the right-recursive expansion).
+ * 
+ * We also write <code>[rule]</code> for zero or one matches of
+ * <code>rule</code>; roughly corresponding to the BNF rule
+ * <code>&lt;opt-rule&gt; = &lt;blank&gt; | &lt;rule&gt;</code>.
  * 
  * The EBNF for the grammar is, so far:
  *
@@ -21,6 +27,7 @@
  * int = ? integer as sequence of digits ? ;
  * atomic-expr = var
  *             | literal
+ *             | data-constructor
  *             | "(" expr ")" ;
  * expr = atomic-expr
  *      | abstraction
@@ -81,10 +88,16 @@
  * start = program ;
  * </pre>
  * 
- * @remark The boolean (and the <code>if...then...else</code> expression)
+ * @remark (1) The boolean (and the <code>if...then...else</code> expression)
  * are not necessary, since we can define them as algebraic data types
  * <code>data Bool = True | False;</code> and using pattern matching
  * <code>if c t f = case c { True -> t ; False -> f }</code>.
+ *
+ * @remark (2) This grammar is not LL(1) "on the nose", the @c type rule
+ * experiences a small ambiguity similar to the "dangling optional else"
+ * discussed in the Dragon book: there is no way to determine if the rule
+ * matched is <code>basic-type</code> or <code>basic-type "->" type</code>
+ * from the first token.
  * 
  * @author Alex Nelson <pqnelson@gmail.com>
  * @date November 10, 2018

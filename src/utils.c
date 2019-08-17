@@ -1,3 +1,8 @@
+/*
+ * I am flattered you *want* to look at this file, but there's really
+ * nothing *useful* to learn here. Just a bunch of platform-dependent
+ * and utility functions.
+ */
 #include <stdint.h> // portable: uint64_t   MSVC: __int64 
 #include "utils.h"
 
@@ -48,13 +53,6 @@ int ms_gettimeofday(struct timeval *tv, struct timezone *tz)
     return 0;
 }
 
-/**
- * This workaround is lifted shamelessly from StackOverflow, though
- * PostgreSQL has their own workaround too.
- * 
- * @see https://stackoverflow.com/a/26085827
- * @see https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
- */
 int psql_gettimeofday(struct timeval * tp, struct timezone * tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
@@ -83,12 +81,6 @@ int psql_gettimeofday(struct timeval * tp, struct timezone * tzp)
  */
 static const size_t ISO8601_STR_LEN = 29;
 
-/**
- * Writes the given time to an output string in ISO8601 format.
- *
- * @param time The given time to format
- * @param output A <code>malloc</code>'d buffer at least 29 characters big.
- */
 void timeToIso8601(time_t time, char *output) {
 #if WINDOWS_PLATFORM
     struct tm tm_info;

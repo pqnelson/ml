@@ -224,6 +224,7 @@ static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
   @   numOfCommentStarts(str, \strlen(str)) <= numOfCommentEnds(str, \strlen(str));
   @*/
 
+// TODO: handle single line comments
 /* Caveat: for runaway comments, it DOES NOT skip it. Instead, it sets
  * `this->current` to be the end of the string, and returns a
  * `SKIP_COMMENT_RUNAWAY` status to indicate the scanner has, well, found
@@ -294,9 +295,11 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
 }
 
 /*@ requires \valid(this);
+  @ assigns this->current;
   @ ensures \forall size_t c; 0 <= c < (size_t)(this->current - (\old(this->current)))
   @          ==> isspace(\old(this)->current[c]);
   @ ensures \result == (\old(this)->current != this->current);
+  @ ensures !isspace(peek(this));
   @*/
 static bool skipWhitespace(mml_Scanner *this) {
     bool hasSkippedWS = isspace(peek(this));
@@ -312,6 +315,7 @@ static bool skipWhitespace(mml_Scanner *this) {
         //@ assert current < this->current;
     }
     //@ assert current <= this->current;
+    //@ assert !isspace(peek(this));
     return hasSkippedWS;
 }
 
@@ -537,7 +541,7 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
     switch (c) {
     case '"':
         token = scanString(scanner);
-        //@ assert mml_Token_isSymbol(token);
+        //@ assert mml_Token_isError(token) || mml_Token_isSymbol(token);
         break;
     case '(':
         token = makeToken(scanner, MML_TOKEN_LEFT_PAREN);
@@ -671,18 +675,18 @@ mml_Token* mml_Scanner_next(mml_Scanner *this) {
         char c = advance(this);
         if (isalpha(c)) {
             MML_TokenType type = scanIdOrKeyword(this);
-            //@ assert type != MML_TOKEN_ERROR
+            //@ assert type != MML_TOKEN_ERROR;
             token = makeToken(this, type);
-            //@ assert mml_Token_isIdentifier(token) || mml_Token_isKeyword(token)
+            //@ assert mml_Token_isIdentifier(token) || mml_Token_isKeyword(token);
         } else if (isdigit(c) || ('-' == c && isdigit(peek(this)))) {
             token = scanNumber(this);
-            //@ assert mml_Token_isNumber(token) || mml_Token_isError(token)
+            //@ assert mml_Token_isNumber(token) || mml_Token_isError(token);
         } else {
-            //@ assert (!isalnum(c)) || ('-' == c && !isdigit(peek(this)))
+            //@ assert (!isalnum(c)) && ('-' == c && !isdigit(peek(this)));
             token = scanSymbol(this);
-            //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token)
+            //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token);
         }
     }
-    //@ assert NULL != token
+    //@ assert NULL != token;
     return token;
 }
