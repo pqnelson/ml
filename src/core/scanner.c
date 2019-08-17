@@ -4,11 +4,11 @@
 #include <assert.h>
 #include <string.h> /* memcmp(), strnlen() */
 #include "utils.h"
-#include "mml/token.h"
-#include "mml/scanner.h"
+#include "core/token.h"
+#include "core/scanner.h"
 // TODO: write `logic` functions for the skip whitespace and comments
 // TODO: write `logic` function for the first char after skipping whitespace
-// TODO: rewrite the contract for mml_Scanner_next(), it could be more
+// TODO: rewrite the contract for core_Scanner_next(), it could be more
 //       readable (if not elegant).
 
 /*@ behavior null_source:
@@ -17,11 +17,11 @@
   @   ensures \null == \result;
   @ behavior no_allocation:
   @   assumes \valid(source);
-  @   assumes !is_allocable(sizeof(struct mml_Scanner));
+  @   assumes !is_allocable(sizeof(struct core_Scanner));
   @   exits EXIT_MALLOCERR;
   @ behavior default:
   @   assumes \valid(source);
-  @   assumes is_allocable(sizeof(struct mml_Scanner));
+  @   assumes is_allocable(sizeof(struct core_Scanner));
   @   allocates \result;
   @   ensures source == \result->start;
   @   ensures source == \result->current;
@@ -29,12 +29,12 @@
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-mml_Scanner* mml_Scanner_new(const char *source) {
+core_Scanner* core_Scanner_new(const char *source) {
     if (NULL == source) {
-        eprintf("Trying to pass null string to mml_Scanner_new()\n");
+        eprintf("Trying to pass null string to core_Scanner_new()\n");
         return NULL;
     }
-    mml_Scanner *scanner = malloc(sizeof(*scanner));
+    core_Scanner *scanner = malloc(sizeof(*scanner));
     if (NULL == scanner) {
         exit(EXIT_MALLOCERR);
     }
@@ -54,7 +54,7 @@ mml_Scanner* mml_Scanner_new(const char *source) {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-void mml_Scanner_free(mml_Scanner *this) {
+void core_Scanner_free(core_Scanner *this) {
     if (NULL == this) return;
     free(this);
     this = NULL;
@@ -76,7 +76,7 @@ void mml_Scanner_free(mml_Scanner *this) {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-bool mml_Scanner_hasNext(mml_Scanner *this) {
+bool core_Scanner_hasNext(core_Scanner *this) {
     if (NULL == this) return false;
     bool hasNext = false;
     size_t c;
@@ -90,7 +90,7 @@ bool mml_Scanner_hasNext(mml_Scanner *this) {
 }
 
 /* ############################################################
-   Everything else is just a helper to mml_Scanner_next()
+   Everything else is just a helper to core_Scanner_next()
    ############################################################ */
 
 /*@ behavior null_scanner:
@@ -102,22 +102,22 @@ bool mml_Scanner_hasNext(mml_Scanner *this) {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static char peek(mml_Scanner *this) {
+static char peek(core_Scanner *this) {
     if (NULL == this) return '\0';
     return this->current[0];
 }
 
 /*@ behavior does_not_have_next:
-  @   assumes !mml_Scanner_hasNext(this);
+  @   assumes !core_Scanner_hasNext(this);
   @   ensures '\0' == \result;
   @ behavior default:
-  @   assumes mml_Scanner_hasNext(this);
+  @   assumes core_Scanner_hasNext(this);
   @   ensures \result == this->current[1];
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static char peekNext(mml_Scanner *this) {
-    return (mml_Scanner_hasNext(this) ? this->current[1] : '\0');
+static char peekNext(core_Scanner *this) {
+    return (core_Scanner_hasNext(this) ? this->current[1] : '\0');
 }
 
 /*@ behavior null_scanner:
@@ -131,7 +131,7 @@ static char peekNext(mml_Scanner *this) {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static char advance(mml_Scanner *this) {
+static char advance(core_Scanner *this) {
     if (NULL == this) return '\0';
     this->current++;
     return this->current[-1];
@@ -145,7 +145,7 @@ static char advance(mml_Scanner *this) {
 /*@ requires \valid(this)
   @ ensures \result == (1 == commentStarts(this->current, 0));
   @*/
-static bool isCommentStart(mml_Scanner *this) {
+static bool isCommentStart(core_Scanner *this) {
     return (('(' == peek(this)) && ('*' == peekNext(this)));
 }
 
@@ -155,7 +155,7 @@ enum SKIP_COMMENT_STATUS {
     SKIP_COMMENT_NONE_FOUND
 };
 
-/*@ logic boolean isCommentEnd(mml_Scanner *this) =
+/*@ logic boolean isCommentEnd(core_Scanner *this) =
   @   ('*'==peek(this) && ')' == peekNext(this));
   @*/
 
@@ -183,7 +183,7 @@ enum SKIP_COMMENT_STATUS {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
+static size_t adjustCommentDepth(core_Scanner *this, size_t depth) {
     size_t newDepth = depth;
     switch(peek(this)) {
     case '\n':
@@ -247,7 +247,7 @@ static size_t adjustCommentDepth(mml_Scanner *this, size_t depth) {
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
+static enum SKIP_COMMENT_STATUS skipComment(core_Scanner *this) {
     if (!isCommentStart(this)) return SKIP_COMMENT_NONE_FOUND;
     //@ assert isCommentStart(this)
     
@@ -264,7 +264,7 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
     // eat everything in the block comment until corresponding "*)"
     //@ assert (this->current) > current;
     //@ invariant depth == numOfCommentStarts(current, this->current - current) - numOfCommentEnds(current, this->current - current);
-    while (depth > 0 && mml_Scanner_hasNext(this)) {
+    while (depth > 0 && core_Scanner_hasNext(this)) {
         //@ assert depth > 0
         depth = adjustCommentDepth(this, depth);
         //@ assert depth >= 0
@@ -272,10 +272,10 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
         //@ assert (this->current) > current;
     }
     //@ assert (this->current) > current;
-    //@ assert depth == 0 || !mml_Scanner_hasNext(this);
+    //@ assert depth == 0 || !core_Scanner_hasNext(this);
     if (depth > 0) {
         // handle runaway comments
-        //@ assert !mml_Scanner_hasNext(this);
+        //@ assert !core_Scanner_hasNext(this);
         //@ assert numOfCommentStarts(current, strlen(current)) > numOfCommentEnds(current, strlen(current));
         //@ assert !hasBalancedComments(current);
         status = SKIP_COMMENT_RUNAWAY;
@@ -284,7 +284,7 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
         //@ assert (this->current) == current;
         this->line = line;
     } else {
-        //@ assert depth == 0 && mml_Scanner_hasNext(this);
+        //@ assert depth == 0 && core_Scanner_hasNext(this);
         //@ assert (this->current) > current;
         //@ assert numOfCommentStarts(current, (size_t)(this->current - current)) == numOfCommentEnds(current, (size_t)(this->current - current));
         //@ assert hasBalancedComments(current);
@@ -301,7 +301,7 @@ static enum SKIP_COMMENT_STATUS skipComment(mml_Scanner *this) {
   @ ensures \result == (\old(this)->current != this->current);
   @ ensures !isspace(peek(this));
   @*/
-static bool skipWhitespace(mml_Scanner *this) {
+static bool skipWhitespace(core_Scanner *this) {
     bool hasSkippedWS = isspace(peek(this));
     const char *current = this->current;
     //@ assert current == \old(this->current);
@@ -333,7 +333,7 @@ static bool skipWhitespace(mml_Scanner *this) {
   @ complete behaviors;
   @ disjoint behaviors;
   @*/
-static void skipWhitespaceAndComments(mml_Scanner *this) {
+static void skipWhitespaceAndComments(core_Scanner *this) {
     bool hasSkippedWhitespace;
     enum SKIP_COMMENT_STATUS status;
     do {
@@ -347,13 +347,13 @@ static void skipWhitespaceAndComments(mml_Scanner *this) {
   @ allocates *token;
   @ assigns \result;
   @ ensures \valid(\result);
-  @ ensures type == mml_Token_type(\result);
-  @ ensures (size_t)((this->current) - (this->start)) == mml_Token_length(\result);
+  @ ensures type == core_Token_type(\result);
+  @ ensures (size_t)((this->current) - (this->start)) == core_Token_length(\result);
   @ ensures this->start == \result->start;
   @*/
-static mml_Token* makeToken(mml_Scanner *this, MML_TokenType type) {
+static core_Token* makeToken(core_Scanner *this, CORE_TokenType type) {
     size_t length = (size_t)((this->current) - (this->start));
-    mml_Token *token = mml_Token_new(type, this->start, length, this->line);
+    core_Token *token = core_Token_new(type, this->start, length, this->line);
     return token;
 }
 
@@ -366,20 +366,20 @@ static mml_Token* makeToken(mml_Scanner *this, MML_TokenType type) {
   @ behavior default:
   @   assumes !(((size_t)((scanner->current) - (scanner->start)) == start + length)
   @    && (0 == memcmp(scanner->start + start, keyword, length)));
-  @   ensures MML_TOKEN_IDENTIFIER == \result;
+  @   ensures CORE_TOKEN_IDENTIFIER == \result;
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-  static MML_TokenType matchKeyword(mml_Scanner *scanner,
+  static CORE_TokenType matchKeyword(core_Scanner *scanner,
                                   size_t start,
                                   size_t length,
                                   const char *keyword,
-                                  MML_TokenType type) {
+                                  CORE_TokenType type) {
     if ((size_t)((scanner->current) - (scanner->start)) == start + length
         && 0 == memcmp(scanner->start + start, keyword, length)) {
         return type;
     }
-    return MML_TOKEN_IDENTIFIER;
+    return CORE_TOKEN_IDENTIFIER;
 }
 
 // See https://www.haskell.org/onlinereport/lexemes.html
@@ -392,33 +392,33 @@ static bool isIdentifierChar(char c) {
 /*@ requires \valid(scanner);
   @ assigns scanner->current;
   @ ensures (scanner->current) > (scanner->start);
-  @ ensures (MML_TOKEN_KW_START < \result && result < MML_TOKEN_KW_END)
-  @         || (MML_TOKEN_IDENTIFIER == \result);
+  @ ensures (CORE_TOKEN_KW_START < \result && result < CORE_TOKEN_KW_END)
+  @         || (CORE_TOKEN_IDENTIFIER == \result);
   @*/
-static MML_TokenType scanIdOrKeyword(mml_Scanner *scanner) {
+static CORE_TokenType scanIdOrKeyword(core_Scanner *scanner) {
     while (isIdentifierChar(peek(scanner)))
         advance(scanner);
     // matches "fn", "if", "then", "else", "True", "False", etc.
     switch (scanner->start[0]) {
     case 'c':
-        return matchKeyword(scanner, 1, 3, "ase", MML_TOKEN_CASE);
+        return matchKeyword(scanner, 1, 3, "ase", CORE_TOKEN_CASE);
     case 'd':
-        return matchKeyword(scanner, 1, 3, "ata", MML_TOKEN_DATA);
+        return matchKeyword(scanner, 1, 3, "ata", CORE_TOKEN_DATA);
     case 'e':
-        return matchKeyword(scanner, 1, 3, "lse", MML_TOKEN_ELSE);
+        return matchKeyword(scanner, 1, 3, "lse", CORE_TOKEN_ELSE);
     case 'f':
         if (6 == scanner->current - scanner->start) {
-            return matchKeyword(scanner, 1, 5, "orall", MML_TOKEN_FORALL);
+            return matchKeyword(scanner, 1, 5, "orall", CORE_TOKEN_FORALL);
         } else {
-            return matchKeyword(scanner, 1, 1, "n", MML_TOKEN_FN);
+            return matchKeyword(scanner, 1, 1, "n", CORE_TOKEN_FN);
         }
         break;
     case 'i':
         if (scanner->current - scanner->start > 1) {
             if ('f' == scanner->start[1]) {
-                return matchKeyword(scanner, 1, 1, "f", MML_TOKEN_IF);
+                return matchKeyword(scanner, 1, 1, "f", CORE_TOKEN_IF);
             } else if ('n' == scanner->start[1]) {
-                return matchKeyword(scanner, 1, 1, "n", MML_TOKEN_IN);
+                return matchKeyword(scanner, 1, 1, "n", CORE_TOKEN_IN);
             }
         }
         break;
@@ -426,31 +426,31 @@ static MML_TokenType scanIdOrKeyword(mml_Scanner *scanner) {
         if (scanner->current - scanner->start > 2) {
             if (('e' == scanner->start[1]) && ('t' == scanner->start[2])) {
                 if (3 == scanner->current - scanner->start) {
-                    return matchKeyword(scanner, 1, 2, "et", MML_TOKEN_LET);
+                    return matchKeyword(scanner, 1, 2, "et", CORE_TOKEN_LET);
                 } else {
-                    return matchKeyword(scanner, 1, 5, "etrec", MML_TOKEN_LETREC);
+                    return matchKeyword(scanner, 1, 5, "etrec", CORE_TOKEN_LETREC);
                 }
             }
         }
         break;
     case 'n':
-        return matchKeyword(scanner, 1, 6, "ewtype", MML_TOKEN_NEWTYPE);  
+        return matchKeyword(scanner, 1, 6, "ewtype", CORE_TOKEN_NEWTYPE);  
     case 'o':
-        return matchKeyword(scanner, 1, 1, "f", MML_TOKEN_OF);
+        return matchKeyword(scanner, 1, 1, "f", CORE_TOKEN_OF);
     case 't':
-        return matchKeyword(scanner, 1, 3, "hen", MML_TOKEN_THEN);
+        return matchKeyword(scanner, 1, 3, "hen", CORE_TOKEN_THEN);
     case 'B':
-        return matchKeyword(scanner, 1, 3, "ool", MML_TOKEN_BOOL);
+        return matchKeyword(scanner, 1, 3, "ool", CORE_TOKEN_BOOL);
     case 'F':
-        return matchKeyword(scanner, 1, 4, "alse", MML_TOKEN_FALSE);
+        return matchKeyword(scanner, 1, 4, "alse", CORE_TOKEN_FALSE);
     case 'I':
-        return matchKeyword(scanner, 1, 2, "nt", MML_TOKEN_INT); 
+        return matchKeyword(scanner, 1, 2, "nt", CORE_TOKEN_INT); 
     case 'T':
-        return matchKeyword(scanner, 1, 3, "rue", MML_TOKEN_TRUE);
+        return matchKeyword(scanner, 1, 3, "rue", CORE_TOKEN_TRUE);
     default:
         break;
     }
-    return MML_TOKEN_IDENTIFIER;
+    return CORE_TOKEN_IDENTIFIER;
 }
 
 /*@ logic size_t indexOfLastDigit(const char *c) =
@@ -464,47 +464,47 @@ static MML_TokenType scanIdOrKeyword(mml_Scanner *scanner) {
   @          || ('-' == scanner->current[0] && isdigit(scanner->current[1]));
   @ behavior default:
   @   assumes !isalpha(scanner->current[indexOfLastDigit(scanner->current)]);
-  @   ensures mml_Token_isNumber(\result);
+  @   ensures core_Token_isNumber(\result);
   @ behavior bad_format:
   @   assumes isalpha(scanner->current[indexOfLastDigit(scanner->current)]);
-  @   ensures mml_Token_isError(\result);
+  @   ensures core_Token_isError(\result);
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-static mml_Token* scanNumber(mml_Scanner *scanner) {
+static core_Token* scanNumber(core_Scanner *scanner) {
     //@ assert isdigit(peek(scanner));
     while (isdigit(peek(scanner))) advance(scanner);
     //@ assert !isdigit(peek(scanner));
 
-    mml_Token *token;
+    core_Token *token;
     // so "302a" is an error, but "302+" is two tokens "302" and "+"
-    if (!mml_Scanner_hasNext(scanner) || !isalpha(peek(scanner))) {
-        token = makeToken(scanner, MML_TOKEN_INTEGER);
-        //@ assert mml_Token_isNumber(token);
+    if (!core_Scanner_hasNext(scanner) || !isalpha(peek(scanner))) {
+        token = makeToken(scanner, CORE_TOKEN_INTEGER);
+        //@ assert core_Token_isNumber(token);
     } else {
         //@ assert scanner_hasNext(scanner)
         //@ assert isalpha(peek(scanner))
         
         /* e.g., "1foo" is a token error */
-        while (mml_Scanner_hasNext(scanner) && isalnum(peek(scanner))) {
+        while (core_Scanner_hasNext(scanner) && isalnum(peek(scanner))) {
             advance(scanner);
         }
-        //@ assert (!mml_Scanner_hasNext(scanner) || !isalpha(peek(scanner)));
-        token = makeToken(scanner, MML_TOKEN_ERROR);
-        //@ assert mml_Token_isError(token);
+        //@ assert (!core_Scanner_hasNext(scanner) || !isalpha(peek(scanner)));
+        token = makeToken(scanner, CORE_TOKEN_ERROR);
+        //@ assert core_Token_isError(token);
     }
-    //@ assert (!mml_Scanner_hasNext(scanner) || !isalpha(peek(scanner)))
-    //@ assert mml_Token_isError(token) || mml_Token_isNumber(token);
+    //@ assert (!core_Scanner_hasNext(scanner) || !isalpha(peek(scanner)))
+    //@ assert core_Token_isError(token) || core_Token_isNumber(token);
     return token;
 }
 
-static mml_Token* scanString(mml_Scanner *scanner) {
+static core_Token* scanString(core_Scanner *scanner) {
     assert('"' == scanner->current[-1]);
     //@ assert '"' == scanner->current[-1];
-    mml_Token *token;
+    core_Token *token;
     size_t line = scanner->line;
     
-    while ('"' != peek(scanner) && mml_Scanner_hasNext(scanner)) {
+    while ('"' != peek(scanner) && core_Scanner_hasNext(scanner)) {
         if ('\n' == peek(scanner)) {
             scanner->line++;
         } else if ('\\' == peek(scanner) && '"' == peekNext(scanner)) {
@@ -513,102 +513,102 @@ static mml_Token* scanString(mml_Scanner *scanner) {
         }
         advance(scanner);
     }
-    //@ assert ('"' == peek(scanner)) || !mml_Scanner_hasNext(scanner);
+    //@ assert ('"' == peek(scanner)) || !core_Scanner_hasNext(scanner);
     
-    if (!mml_Scanner_hasNext(scanner)) {
+    if (!core_Scanner_hasNext(scanner)) {
         // unterminated string
-        token = makeToken(scanner, MML_TOKEN_ERROR);
-        mml_Token_setLine(token, line);
-        //@ assert mml_Token_isError(token);
+        token = makeToken(scanner, CORE_TOKEN_ERROR);
+        core_Token_setLine(token, line);
+        //@ assert core_Token_isError(token);
     } else {
         //@ assert ('"' == peek(scanner));
         advance(scanner); // the closing '"' char
-        token = makeToken(scanner, MML_TOKEN_STRING);
-        //@ assert mml_Token_isString(token);
+        token = makeToken(scanner, CORE_TOKEN_STRING);
+        //@ assert core_Token_isString(token);
     }
-    //@ assert mml_Token_isError(token) || mml_Token_isString(token);
+    //@ assert core_Token_isError(token) || core_Token_isString(token);
     return token;
 }
 
 /*@ requires \valid(scanner);
   @ allocates \result;
   @ assigns \result;
-  @ ensures mml_Token_isSymbol(\result) || mml_Token_isError(\result);
+  @ ensures core_Token_isSymbol(\result) || core_Token_isError(\result);
   @*/
-static mml_Token* scanSymbol(mml_Scanner *scanner) {
+static core_Token* scanSymbol(core_Scanner *scanner) {
     char c = scanner->current[-1];
-    mml_Token *token;
+    core_Token *token;
     switch (c) {
     case '"':
         token = scanString(scanner);
-        //@ assert mml_Token_isError(token) || mml_Token_isSymbol(token);
+        //@ assert core_Token_isError(token) || core_Token_isSymbol(token);
         break;
     case '(':
-        token = makeToken(scanner, MML_TOKEN_LEFT_PAREN);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_LEFT_PAREN);
+        //@ assert core_Token_isSymbol(token);
         break;
     case ')':
-        token = makeToken(scanner, MML_TOKEN_RIGHT_PAREN);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_RIGHT_PAREN);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '*':
-        token = makeToken(scanner, MML_TOKEN_STAR);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_STAR);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '+':
-        token = makeToken(scanner, MML_TOKEN_PLUS);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_PLUS);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '-':
         if ('>' == peek(scanner)) {
             advance(scanner);
-            token = makeToken(scanner, MML_TOKEN_FN_ARROW);
+            token = makeToken(scanner, CORE_TOKEN_FN_ARROW);
         } else {
-            token = makeToken(scanner, MML_TOKEN_MINUS);
+            token = makeToken(scanner, CORE_TOKEN_MINUS);
         }
-        //@ assert mml_Token_isSymbol(token);
+        //@ assert core_Token_isSymbol(token);
         break;
     case ':':
         if (':' == peek(scanner)) {
             advance(scanner);
-            token = makeToken(scanner, MML_TOKEN_ESTI);
+            token = makeToken(scanner, CORE_TOKEN_ESTI);
         } else {
-            token = makeToken(scanner, MML_TOKEN_COLON);
+            token = makeToken(scanner, CORE_TOKEN_COLON);
         }
-        //@ assert mml_Token_isSymbol(token);
+        //@ assert core_Token_isSymbol(token);
         break;
     case ';':
-        token = makeToken(scanner, MML_TOKEN_SEMICOLON);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_SEMICOLON);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '=':
-        token = makeToken(scanner, MML_TOKEN_EQUAL);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_EQUAL);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '@':
-        token = makeToken(scanner, MML_TOKEN_AT_SIGN);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_AT_SIGN);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '_':
-        token = makeToken(scanner, MML_TOKEN_UNDERSCORE);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_UNDERSCORE);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '{':
-        token = makeToken(scanner, MML_TOKEN_LEFT_BRACE);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_LEFT_BRACE);
+        //@ assert core_Token_isSymbol(token);
         break;
     case '}':
-        token = makeToken(scanner, MML_TOKEN_RIGHT_BRACE);
-        //@ assert mml_Token_isSymbol(token);
+        token = makeToken(scanner, CORE_TOKEN_RIGHT_BRACE);
+        //@ assert core_Token_isSymbol(token);
         break;
     default:
         // scanner->start[0] is one of these:  ?<>'[]!#$%^&`~
         // when all else fails, it's an error token
-        token = makeToken(scanner, MML_TOKEN_ERROR);
-        //@ assert mml_Token_isError(token);
+        token = makeToken(scanner, CORE_TOKEN_ERROR);
+        //@ assert core_Token_isError(token);
         break;
     }
-    //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token);
+    //@ assert core_Token_isSymbol(token) || core_Token_isError(token);
     return token;
 }
 
@@ -616,20 +616,20 @@ static mml_Token* scanSymbol(mml_Scanner *scanner) {
   @ requires isCommentStart(this);
   @ requires this->start == this->current;
   @ ensures \valid(\result);
-  @ ensures mml_Token_isError(\result);
-  @ ensures mml_Token_length(\result) == strlen(this->start);
+  @ ensures core_Token_isError(\result);
+  @ ensures core_Token_length(\result) == strlen(this->start);
   @ ensures \result->start == this->start;
   @*/
-static mml_Token* handleRunawayComment(mml_Scanner *this) {
+static core_Token* handleRunawayComment(core_Scanner *this) {
     assert (isCommentStart(this)); // precondition
     // runaway comment!
     size_t length = strlen(this->start);
     this->current += length;
-    return makeToken(this, MML_TOKEN_ERROR);
+    return makeToken(this, CORE_TOKEN_ERROR);
 }
 
 // TODO: figure this out
-/*@ logic char firstCharAfterWhitespace(mml_Scanner *this) =
+/*@ logic char firstCharAfterWhitespace(core_Scanner *this) =
   @*/
 
 /*@ requires \valid(this);
@@ -637,54 +637,54 @@ static mml_Token* handleRunawayComment(mml_Scanner *this) {
   @ assigns \result;
   @ behavior runaway_comment:
   @   assumes !isBalancedComments(this->current);
-  @   ensures mml_Token_isError(\result);
+  @   ensures core_Token_isError(\result);
   @ behavior scanner_has_no_next:
   @   assumes hasBalancedComments(this->current);
   @   assumes '\0' == firstCharAfterWhitespace(this);
-  @   ensures mml_Token_isEOF(\result);
+  @   ensures core_Token_isEOF(\result);
   @ behavior lexeme_starts_with_alpha:
   @   assumes hasBalancedComments(this->current);
   @   assumes isalpha(firstCharAfterWhitespace(this));
-  @   ensures mml_Token_isIdentifier(\result) || mml_Token_isKeyword(\result);
+  @   ensures core_Token_isIdentifier(\result) || core_Token_isKeyword(\result);
   @ behavior lexeme_is_number:
   @   assumes isdigit(firstCharAfterWhitespace(this))
   @          ('-' == firstCharAfterWhitespace(this));
-  @   ensures mml_Token_isNumber(\result) || mml_Token_isError(\result);
+  @   ensures core_Token_isNumber(\result) || core_Token_isError(\result);
   @ behavior lexeme_is_symbol:
   @   assumes ispunct(firstCharAfterWhitespace(this));
-  @   ensures mml_Token_isSymbol(\result) || mml_Token_isError(\result);
+  @   ensures core_Token_isSymbol(\result) || core_Token_isError(\result);
   @ disjoint behaviors;
   @ complete behaviors;
   @*/
-mml_Token* mml_Scanner_next(mml_Scanner *this) {
+core_Token* core_Scanner_next(core_Scanner *this) {
     skipWhitespaceAndComments(this);
-    //@ assert mml_Scanner_hasNext(this) ==> !isspace(this->current[0]);
+    //@ assert core_Scanner_hasNext(this) ==> !isspace(this->current[0]);
     this->start = this->current;
-    //@ assert mml_Scanner_hasNext(this) ==> !isspace(this->start[0]);
+    //@ assert core_Scanner_hasNext(this) ==> !isspace(this->start[0]);
     //@ assert this->current >= this->start;
 
-    mml_Token *token;
-    if (!mml_Scanner_hasNext(this)) {
-        token = makeToken(this, MML_TOKEN_EOF);
-        //@ assert mml_Token_isEOF(token);
+    core_Token *token;
+    if (!core_Scanner_hasNext(this)) {
+        token = makeToken(this, CORE_TOKEN_EOF);
+        //@ assert core_Token_isEOF(token);
     } else if (isCommentStart(this)) {
         token = handleRunawayComment(this);
-        //@ assert mml_Token_isError(token);
+        //@ assert core_Token_isError(token);
     } else {
         // default case
         char c = advance(this);
         if (isalpha(c)) {
-            MML_TokenType type = scanIdOrKeyword(this);
-            //@ assert type != MML_TOKEN_ERROR;
+            CORE_TokenType type = scanIdOrKeyword(this);
+            //@ assert type != CORE_TOKEN_ERROR;
             token = makeToken(this, type);
-            //@ assert mml_Token_isIdentifier(token) || mml_Token_isKeyword(token);
+            //@ assert core_Token_isIdentifier(token) || core_Token_isKeyword(token);
         } else if (isdigit(c) || ('-' == c && isdigit(peek(this)))) {
             token = scanNumber(this);
-            //@ assert mml_Token_isNumber(token) || mml_Token_isError(token);
+            //@ assert core_Token_isNumber(token) || core_Token_isError(token);
         } else {
             //@ assert (!isalnum(c)) && ('-' == c && !isdigit(peek(this)));
             token = scanSymbol(this);
-            //@ assert mml_Token_isSymbol(token) || mml_Token_isError(token);
+            //@ assert core_Token_isSymbol(token) || core_Token_isError(token);
         }
     }
     //@ assert NULL != token;

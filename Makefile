@@ -2,11 +2,11 @@ CC=gcc
 CFLAGS=-Iincludes -Wall -Wextra -Wformat -std=c99 -pedantic
 SRCDIR=src
 OBJDIR=target
-OBJS=$(OBJDIR)/mml/scanner.o \
-	$(OBJDIR)/mml/token.o \
+OBJS=$(OBJDIR)/core/scanner.o \
+	$(OBJDIR)/core/token.o \
 	$(OBJDIR)/utils.o
-TESTS=test/mml/token_test.c \
-	  test/mml/scanner_test.c
+TESTS=test/core/token_test.c \
+	  test/core/scanner_test.c
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c includes/%.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -14,7 +14,7 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.c includes/%.h
 # make dir to store the .o files, if it doesn't already exist
 makeTargetDir:
 	mkdir -p $(OBJDIR)
-	mkdir -p $(OBJDIR)/mml
+	mkdir -p $(OBJDIR)/core
 
 compile: makeTargetDir $(OBJS)
 

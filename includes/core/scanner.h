@@ -1,12 +1,12 @@
 /**
  * @file
  * 
- * Lexical scanner for Mini-ML.
+ * Lexical scanner for Core-ML.
  *
- * Responsible for reading an input stream, and producing @c mml_Token
+ * Responsible for reading an input stream, and producing @c core_Token
  * objects on demand (i.e., lazily).
  * 
- * @section mmlGrammarSec Mini-ML Grammar
+ * @section coreGrammarSec Core-ML Grammar
  *
  * Recall in EBNF, we write <code>{rule}</code> for zero or more
  * instances of <code>rule</code> (right recursively, i.e.,
@@ -104,48 +104,48 @@
  * @see https://downloads.haskell.org/~ghc/7.6.2/docs/html/users_guide/external-grammar-of-core.html
  */
 
-#ifndef MML_SCANNER_H_
-#define MML_SCANNER_H_
+#ifndef CORE_SCANNER_H_
+#define CORE_SCANNER_H_
 
-#include "mml/token.h"
+#include "core/token.h"
 
-typedef struct mml_Scanner {
+typedef struct core_Scanner {
     const char *start;
     const char *current;
     size_t line;
-} mml_Scanner;
+} core_Scanner;
 
 /**
  * Constructs scanner for input buffer.
  *
- * Constructs a new @c mml_Scanner that produces @c mml_Token values
+ * Constructs a new @c core_Scanner that produces @c core_Token values
  * from the specified input source.
  *
  * @param source An input stream to be scanned.
  */
-mml_Scanner* mml_Scanner_new(const char *source);
+core_Scanner* core_Scanner_new(const char *source);
 
 /**
- * Free @c mml_Scanner object.
+ * Free @c core_Scanner object.
  *
- * This frees the memory allocated for @c this mml_Scanner object, but
+ * This frees the memory allocated for @c this core_Scanner object, but
  * @em not for the input stream. Why? Because we might have lingering
- * mml_Token objects still referencing the input stream.
+ * core_Token objects still referencing the input stream.
  *
- * @param this The mml_Scanner object to be freed.
+ * @param this The core_Scanner object to be freed.
  * @return nothing
  */
-void mml_Scanner_free(mml_Scanner *this);
+void core_Scanner_free(core_Scanner *this);
 
 /**
  * Returns @c true if this scanner has another token in its input.
  *
  * When the scanner is at the end, it returns only @c false.
  * 
- * @param this The mml_Scanner object being inspected
+ * @param this The core_Scanner object being inspected
  * @return true if the scanner has another token
  */
-bool mml_Scanner_hasNext(mml_Scanner *this);
+bool core_Scanner_hasNext(core_Scanner *this);
 
 /**
  * Produce the next token on demand.
@@ -153,9 +153,9 @@ bool mml_Scanner_hasNext(mml_Scanner *this);
  * Finds and returns the next token from the scanner. When the scanner has
  * "finished", it will only produce EOF tokens.
  *
- * @param this The mml_Scanner object in question.
- * @return A pointer to the next mml_Token object.
+ * @param this The core_Scanner object in question.
+ * @return A pointer to the next core_Token object.
  */
-mml_Token* mml_Scanner_next(mml_Scanner *this);
+core_Token* core_Scanner_next(core_Scanner *this);
 
-#endif /* MML_SCANNER_H_ */
+#endif /* CORE_SCANNER_H_ */

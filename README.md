@@ -18,11 +18,11 @@ levels based on abstraction:
 The compilation pipeline looks like:
 
 ``` haskell
-ML.compile :: [ML.Expr] -> [MiniML.Expr]
-MiniML.compile :: (AbstractMachine a) => [MiniML.Expr] -> [ByteCode a]
+ML.compile :: [ML.Expr] -> [CoreML.Expr]
+CoreML.compile :: (AbstractMachine a) => [CoreML.Expr] -> [ByteCode a]
 
 compile :: (AbstractMachine a) => [ML.Expr] -> [ByteCode a]
-compile = MiniML.compile . ML.compile -- compile ML to bytecode
+compile = CoreML.compile . ML.compile -- compile ML to bytecode
 
 eval :: (AbstractMachine a, [ByteCode a]) -> (AbstractMachine a, [ByteCode a])
 ```
@@ -34,7 +34,7 @@ the abstract machine. Native array support? Tinker with the abstract machine.
 
 Lacking creativity, I'll generically refer to the "high level" language
 as "ML" for "MetaLanguage", the intermediate level language as
-"Mini-ML", and the low level abstract machines...well, there are many
+"Core-ML", and the low level abstract machines...well, there are many
 possibilities! This is more a study in functional programming language
 implementation, so I hope to provide a number of abstract machine
 implementations. 
